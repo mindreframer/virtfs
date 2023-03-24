@@ -8,7 +8,7 @@ defmodule Virtfs do
 
   def init(opts) do
     type = Keyword.get(opts, :type, :virt)
-    path = Keyword.get(opts, :path, "")
+    path = Keyword.get(opts, :path, "/")
     backend = backend_for(type)
 
     %FS{
