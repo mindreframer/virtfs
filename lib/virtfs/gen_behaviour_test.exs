@@ -3,7 +3,7 @@ defmodule Virtfs.GenBehaviourTest do
   use Mneme, action: :accept
   alias Virtfs.GenBehaviour
 
-  describe "gen" do
+  describe "extract_callbacks" do
     test "works" do
       auto_assert(
         [
@@ -25,7 +25,7 @@ defmodule Virtfs.GenBehaviourTest do
           {:copy, 3, [:fs, :src, :dest]},
           {:cd!, 2, [:fs, :path]},
           {:cd, 2, [:fs, :path]}
-        ] <- GenBehaviour.gen(Virtfs.Behaviour)
+        ] <- GenBehaviour.extract_callbacks(Virtfs.Behaviour)
       )
     end
   end
