@@ -6,6 +6,8 @@ defmodule Virtfs.MixProject do
       app: :virtfs,
       version: "0.1.0",
       elixir: "~> 1.14",
+      test_paths: ["test", "lib"],
+      test_pattern: "*_test.exs",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
