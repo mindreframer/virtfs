@@ -22,6 +22,8 @@ defmodule Virtfs.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:typed_struct, "~> 0.3.0"},
+      {:mneme, "~> 0.2", only: [:test]},
       {:test_iex, github: "mindreframer/test_iex", only: [:test, :dev]}
     ]
   end
