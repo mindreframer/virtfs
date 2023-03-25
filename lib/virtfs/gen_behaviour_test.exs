@@ -19,6 +19,8 @@ defmodule Virtfs.GenBehaviourTest do
           {:read, 2, [:fs, :path]},
           {:mkdir_p!, 2, [:fs, :path]},
           {:mkdir_p, 2, [:fs, :path]},
+          {:ls!, 2, [:fs, :path]},
+          {:ls, 2, [:fs, :path]},
           {:exists?, 2, [:fs, :path]},
           {:dir?, 2, [:fs, :path]},
           {:copy!, 3, [:fs, :src, :dest]},
