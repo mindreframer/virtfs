@@ -78,7 +78,8 @@ defmodule Virtfs.Backend.VirtualFS do
   def rm_rf(fs, path) do
     full_path = to_fullpath(fs.cwd, path)
     paths = Map.keys(fs.files)
-    found = Enum.filter(paths, fn p -> String.contains?(p, full_path) end)
+    regex = rm_rf_regex(full_path)
+    found = Enum.filter(paths, fn p -> Regex.match?(regex, p) end)
 
     files =
       Enum.reduce(found, fs.files, fn p, files ->
@@ -86,6 +87,11 @@ defmodule Virtfs.Backend.VirtualFS do
       end)
 
     {:ok, update_fs(fs, :files, files)}
+  end
+
+  defp rm_rf_regex(full_path) do
+    {:ok, regex} = Regex.compile("^#{full_path}*")
+    regex
   end
 
   def mkdir_p(fs, path) do

@@ -242,6 +242,37 @@ defmodule Virtfs.Backend.VirtualFSTest do
     end
   end
 
+  describe "rm_rf" do
+    test "removes a folder with full content (and subfolders)" do
+      fs = Virtfs.init()
+      {:ok, fs} = VirtualFS.cd(fs, "/first")
+      {:ok, fs} = VirtualFS.mkdir_p(fs, "nested/folder")
+      {:ok, fs} = VirtualFS.write(fs, "nested/folder/file.txt1", "content")
+
+      auto_assert(
+        %{
+          "/" => %Virtfs.File{kind: :dir, path: "/"},
+          "/first" => %Virtfs.File{kind: :dir, path: "/first"},
+          "/first/nested" => %Virtfs.File{kind: :dir, path: "/first/nested"},
+          "/first/nested/folder" => %Virtfs.File{kind: :dir, path: "/first/nested/folder"},
+          "/first/nested/folder/file.txt1" => %Virtfs.File{
+            content: "content",
+            path: "/first/nested/folder/file.txt1"
+          }
+        } <- fs.files
+      )
+
+      {:ok, fs} = VirtualFS.rm_rf(fs, "/first/nested")
+
+      auto_assert(
+        %{
+          "/" => %Virtfs.File{kind: :dir, path: "/"},
+          "/first" => %Virtfs.File{kind: :dir, path: "/first"}
+        } <- fs.files
+      )
+    end
+  end
+
   describe "rename" do
     test "works with existing files" do
       fs = Virtfs.init()
