@@ -42,11 +42,21 @@ defmodule Virtfs.Backend.VirtualFS do
   def ls(fs, path) do
     full_path = to_fullpath(fs.cwd, path)
     paths = Map.keys(fs.files)
+    regex = ls_regex(full_path)
+    found = Enum.filter(paths, fn p -> Regex.match?(regex, p) end)
+    {:ok, found}
+  end
+
+  defp ls_regex("/") do
+    {:ok, regex} = Regex.compile("/[^/]*$")
+    regex
+  end
+
+  defp ls_regex(full_path) do
     # everything with full_path + slash + non-slash chars at the end of path
     # takes only paths one level deeper then the given path
     {:ok, regex} = Regex.compile("#{full_path}/[^/]*$")
-    found = Enum.filter(paths, fn p -> Regex.match?(regex, p) end)
-    {:ok, found}
+    regex
   end
 
   def tree(fs, path) do
@@ -82,7 +92,7 @@ defmodule Virtfs.Backend.VirtualFS do
     {:ok, fs}
   end
 
-  def copy(fs, src, dest) do
+  def cp(fs, src, dest) do
     full_src = to_fullpath(fs.cwd, src)
     full_dest = to_fullpath(fs.cwd, dest)
 
@@ -91,11 +101,14 @@ defmodule Virtfs.Backend.VirtualFS do
     files =
       cond do
         file == nil -> fs.files
-        file.kind == :dir -> Map.put(fs.files, full_dest, file)
-        file.kind == :file -> Map.put(fs.files, full_dest, file)
+        file.kind == :dir -> fs.files
+        file.kind == :file -> Map.put(fs.files, full_dest, Map.put(file, :path, full_dest))
       end
 
     {:ok, update_fs(fs, :files, files)}
+  end
+
+  def cp_r(fs, scr, dest) do
   end
 
   def rename(fs, src, dest) do

@@ -152,6 +152,14 @@ defmodule Virtfs.Backend.VirtualFSTest do
           VirtualFS.ls(fs, "my/nested/folder")
       )
     end
+
+    test "works for top folder" do
+      fs = Virtfs.init()
+      {:ok, fs} = VirtualFS.write(fs, "file1.txt", "content")
+      {:ok, fs} = VirtualFS.write(fs, "file2.txt", "content")
+
+      auto_assert({:ok, ["/file1.txt", "/file2.txt"]} <- VirtualFS.ls(fs, "/"))
+    end
   end
 
   describe "tree" do
@@ -275,6 +283,16 @@ defmodule Virtfs.Backend.VirtualFSTest do
       {:ok, fs} = VirtualFS.write(fs, "file1.txt", "content")
       {:ok, fs} = VirtualFS.rename(fs, "missing.txt", "file1.txt")
       auto_assert({:ok, ["/file1.txt"]} <- VirtualFS.tree(fs, "/"))
+    end
+  end
+
+  describe "cp" do
+    test "works for files" do
+      fs = Virtfs.init()
+      {:ok, fs} = VirtualFS.write(fs, "file1.txt", "content")
+      {:ok, fs} = VirtualFS.cp(fs, "file1.txt", "file2.txt")
+
+      auto_assert({:ok, ["/file1.txt", "/file2.txt"]} <- VirtualFS.ls(fs, "/"))
     end
   end
 end
