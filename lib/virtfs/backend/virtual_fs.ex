@@ -76,6 +76,11 @@ defmodule Virtfs.Backend.VirtualFS do
     {:ok, found}
   end
 
+  defp tree_regex("/") do
+    {:ok, regex} = Regex.compile("^/.")
+    regex
+  end
+
   defp tree_regex(full_path) do
     {:ok, regex} = Regex.compile("^#{full_path}/.")
     regex

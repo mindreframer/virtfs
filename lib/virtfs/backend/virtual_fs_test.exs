@@ -174,7 +174,6 @@ defmodule Virtfs.Backend.VirtualFSTest do
       auto_assert(
         {:ok,
          [
-           "/first",
            "/first/second",
            "/first/second/third",
            "/first/second/third/my",
@@ -189,12 +188,35 @@ defmodule Virtfs.Backend.VirtualFSTest do
       auto_assert(
         {:ok,
          [
-           "/first/second/third/my/nested",
            "/first/second/third/my/nested/folder",
            "/first/second/third/my/nested/folder/file.txt",
            "/first/second/third/my/nested/folder2",
            "/first/second/third/my/nested/folder3"
          ]} <- VirtualFS.tree(fs, "my/nested")
+      )
+    end
+
+    test "works for root" do
+      fs = Virtfs.init()
+      {:ok, fs} = VirtualFS.write(fs, "folder/file1.txt", "content")
+      {:ok, fs} = VirtualFS.write(fs, "folder/file2.txt", "content")
+      {:ok, fs} = VirtualFS.mkdir_p(fs, "folder/sub1/sub2")
+      {:ok, fs} = VirtualFS.cp_r(fs, "folder", "folder2")
+
+      auto_assert(
+        {:ok,
+         [
+           "/folder",
+           "/folder/file1.txt",
+           "/folder/file2.txt",
+           "/folder/sub1",
+           "/folder/sub1/sub2",
+           "/folder2",
+           "/folder2/file1.txt",
+           "/folder2/file2.txt",
+           "/folder2/sub1",
+           "/folder2/sub1/sub2"
+         ]} <- VirtualFS.tree(fs, "/")
       )
     end
   end
@@ -284,7 +306,6 @@ defmodule Virtfs.Backend.VirtualFSTest do
       auto_assert(
         {:ok,
          [
-           "/",
            "/first",
            "/first/second",
            "/first/second/third",
@@ -300,7 +321,6 @@ defmodule Virtfs.Backend.VirtualFSTest do
       auto_assert(
         {:ok,
          [
-           "/first/second",
            "/first/second/file1.txt",
            "/first/second/third",
            "/first/second/third/my",
@@ -314,7 +334,7 @@ defmodule Virtfs.Backend.VirtualFSTest do
       fs = Virtfs.init()
       {:ok, fs} = VirtualFS.write(fs, "file1.txt", "content")
       {:ok, fs} = VirtualFS.rename(fs, "missing.txt", "file1.txt")
-      auto_assert({:ok, ["/", "/file1.txt"]} <- VirtualFS.tree(fs, "/"))
+      auto_assert({:ok, ["/file1.txt"]} <- VirtualFS.tree(fs, "/"))
     end
   end
 
@@ -355,7 +375,21 @@ defmodule Virtfs.Backend.VirtualFSTest do
       {:ok, fs} = VirtualFS.mkdir_p(fs, "folder/sub1/sub2")
       {:ok, fs} = VirtualFS.cp_r(fs, "folder", "folder2")
 
-      auto_assert({:ok, []} <- VirtualFS.tree(fs, "/"))
+      auto_assert(
+        {:ok,
+         [
+           "/folder",
+           "/folder/file1.txt",
+           "/folder/file2.txt",
+           "/folder/sub1",
+           "/folder/sub1/sub2",
+           "/folder2",
+           "/folder2/file1.txt",
+           "/folder2/file2.txt",
+           "/folder2/sub1",
+           "/folder2/sub1/sub2"
+         ]} <- VirtualFS.tree(fs, "/")
+      )
 
       auto_assert(
         {:ok, ["/folder2/file1.txt", "/folder2/file2.txt", "/folder2/sub1", "/folder2/sub1/sub2"]} <-
