@@ -154,6 +154,43 @@ defmodule Virtfs.Backend.VirtualFSTest do
     end
   end
 
+  describe "tree" do
+    test "returns recursivelly files below given path" do
+      fs = Virtfs.init()
+      {:ok, fs} = VirtualFS.cd(fs, "/first/second/third")
+      {:ok, fs} = VirtualFS.mkdir_p(fs, "my/nested/folder")
+      {:ok, fs} = VirtualFS.mkdir_p(fs, "my/nested/folder2")
+      {:ok, fs} = VirtualFS.mkdir_p(fs, "my/nested/folder3")
+      {:ok, fs} = VirtualFS.write(fs, "my/nested/folder/file.txt", "content")
+
+      auto_assert(
+        {:ok,
+         [
+           "/first",
+           "/first/second",
+           "/first/second/third",
+           "/first/second/third/my",
+           "/first/second/third/my/nested",
+           "/first/second/third/my/nested/folder",
+           "/first/second/third/my/nested/folder/file.txt",
+           "/first/second/third/my/nested/folder2",
+           "/first/second/third/my/nested/folder3"
+         ]} <- VirtualFS.tree(fs, "/first")
+      )
+
+      auto_assert(
+        {:ok,
+         [
+           "/first/second/third/my/nested",
+           "/first/second/third/my/nested/folder",
+           "/first/second/third/my/nested/folder/file.txt",
+           "/first/second/third/my/nested/folder2",
+           "/first/second/third/my/nested/folder3"
+         ]} <- VirtualFS.tree(fs, "my/nested")
+      )
+    end
+  end
+
   describe "mkdir_p" do
     test "creates full hierarchy of folders" do
       fs = Virtfs.init()
@@ -193,6 +230,43 @@ defmodule Virtfs.Backend.VirtualFSTest do
           "/first/my/nested" => %Virtfs.File{kind: :dir, path: "/first/my/nested"},
           "/first/my/nested/folder" => %Virtfs.File{kind: :dir, path: "/first/my/nested/folder"}
         } <- fs.files
+      )
+    end
+  end
+
+  describe "rename" do
+    test "works" do
+      fs = Virtfs.init()
+      {:ok, fs} = VirtualFS.cd(fs, "/first/second/third")
+      {:ok, fs} = VirtualFS.mkdir_p(fs, "my/nested/folder")
+      {:ok, fs} = VirtualFS.write(fs, "file1.txt", "content")
+      {:ok, fs} = VirtualFS.cd(fs, "/")
+
+      auto_assert(
+        {:ok,
+         [
+           "/first",
+           "/first/second",
+           "/first/second/third",
+           "/first/second/third/file1.txt",
+           "/first/second/third/my",
+           "/first/second/third/my/nested",
+           "/first/second/third/my/nested/folder"
+         ]} <- VirtualFS.tree(fs, "/")
+      )
+
+      {:ok, fs} = VirtualFS.rename(fs, "/first/second/third/file1.txt", "/first/second/file1.txt")
+
+      auto_assert(
+        {:ok,
+         [
+           "/first/second",
+           "/first/second/file1.txt",
+           "/first/second/third",
+           "/first/second/third/my",
+           "/first/second/third/my/nested",
+           "/first/second/third/my/nested/folder"
+         ]} <- VirtualFS.tree(fs, "/first/second")
       )
     end
   end

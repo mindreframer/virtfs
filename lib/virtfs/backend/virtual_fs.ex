@@ -180,6 +180,8 @@ defmodule Virtfs.Backend.VirtualFS do
   end
 
   defp to_fullpath(cwd, path) do
+    path = String.replace(path, "//", "/")
+
     res =
       if String.starts_with?(path, "/") do
         path
