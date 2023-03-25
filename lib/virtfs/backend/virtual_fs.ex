@@ -48,14 +48,14 @@ defmodule Virtfs.Backend.VirtualFS do
   end
 
   defp ls_regex("/") do
-    {:ok, regex} = Regex.compile("/[^/]*$")
+    {:ok, regex} = Regex.compile("^/[^/]*$")
     regex
   end
 
   defp ls_regex(full_path) do
-    # everything with full_path + slash + non-slash chars at the end of path
+    # everything with full_path at start + slash + non-slash chars at the end of path
     # takes only paths one level deeper then the given path
-    {:ok, regex} = Regex.compile("#{full_path}/[^/]*$")
+    {:ok, regex} = Regex.compile("^#{full_path}/[^/]*$")
     regex
   end
 
