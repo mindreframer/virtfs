@@ -31,6 +31,16 @@ defmodule Virtfs.Backend.VirtualFS do
     :ok
   end
 
+  def ls(fs, path) do
+    IO.inspect({fs, path})
+    :ok
+  end
+
+  def ls!(fs, path) do
+    IO.inspect({fs, path})
+    :ok
+  end
+
   def rm_rf(fs, path) do
     IO.inspect({fs, path})
     :ok

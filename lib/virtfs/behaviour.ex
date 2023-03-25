@@ -25,6 +25,9 @@ defmodule Virtfs.Behaviour do
   @callback cd(fs :: FS, path :: String.t()) :: :ok | {:error, any()}
   @callback cd!(fs :: FS, path :: String.t()) :: :ok
 
+  @callback ls(fs :: FS, path :: String.t()) :: :ok | {:error, any()}
+  @callback ls!(fs :: FS, path :: String.t()) :: :ok
+
   @callback exists?(fs :: FS, path :: String.t()) :: true | false
   @callback dir?(fs :: FS, path :: String.t()) :: true | false
 end
