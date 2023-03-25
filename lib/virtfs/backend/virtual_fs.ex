@@ -49,16 +49,46 @@ defmodule Virtfs.Backend.VirtualFS do
 
   def mkdir_p(fs, path) do
     full_path = to_fullpath(fs.cwd, path)
-
     file = Map.get(fs.files, full_path)
-    dir = File.new_dir(path)
 
-    files =
+    fs =
       cond do
-        file == nil -> Map.put(fs.files, path, dir)
+        file == nil -> gen_full_hierarchy(fs, full_path)
+        true -> fs
       end
 
+    {:ok, fs}
+  end
+
+  def touch_file(fs, path) do
+    full_path = to_fullpath(fs.cwd, path)
+
+    file = File.new_file(full_path, "")
+    files = Map.put(fs.files, full_path, file)
     {:ok, update_fs(fs, :files, files)}
+  end
+
+  def touch_dir(fs, path) do
+    full_path = to_fullpath(fs.cwd, path)
+
+    file = File.new_dir(full_path)
+    files = Map.put(fs.files, full_path, file)
+    {:ok, update_fs(fs, :files, files)}
+  end
+
+  def gen_full_hierarchy(fs, path) do
+    full_path = to_fullpath(fs.cwd, path)
+    parts = String.split(full_path, "/") |> Enum.reject(&(&1 == ""))
+
+    {folders, _} =
+      Enum.reduce(parts, {[], "/"}, fn part, {folders, last} ->
+        {[Path.join(last, part) | folders], Path.join(last, part)}
+      end)
+
+    Enum.reduce(folders, fs, fn folder, fs ->
+      {:ok, fs} = touch_dir(fs, folder)
+      fs
+    end)
   end
 
   def copy(fs, src, dest) do
