@@ -337,4 +337,35 @@ defmodule Virtfs.Backend.VirtualFSTest do
       auto_assert({:error, :not_found} <- VirtualFS.ls(fs, "/folder2"))
     end
   end
+
+  describe "cp_r" do
+    test "works for files" do
+      fs = Virtfs.init()
+      {:ok, fs} = VirtualFS.write(fs, "file1.txt", "content")
+      {:ok, fs} = VirtualFS.cp_r(fs, "file1.txt", "file2.txt")
+
+      auto_assert({:ok, ["/file1.txt", "/file2.txt"]} <- VirtualFS.ls(fs, "/"))
+      auto_assert({:ok, "content"} <- VirtualFS.read(fs, "file2.txt"))
+    end
+
+    test "works for folders" do
+      fs = Virtfs.init()
+      {:ok, fs} = VirtualFS.write(fs, "folder/file1.txt", "content")
+      {:ok, fs} = VirtualFS.write(fs, "folder/file2.txt", "content")
+      {:ok, fs} = VirtualFS.mkdir_p(fs, "folder/sub1/sub2")
+      {:ok, fs} = VirtualFS.cp_r(fs, "folder", "folder2")
+
+      auto_assert({:ok, []} <- VirtualFS.tree(fs, "/"))
+
+      auto_assert(
+        {:ok, ["/folder2/file1.txt", "/folder2/file2.txt", "/folder2/sub1", "/folder2/sub1/sub2"]} <-
+          VirtualFS.tree(fs, "/folder2")
+      )
+
+      auto_assert(
+        {:ok, ["/folder/file1.txt", "/folder/file2.txt", "/folder/sub1", "/folder/sub1/sub2"]} <-
+          VirtualFS.tree(fs, "/folder")
+      )
+    end
+  end
 end

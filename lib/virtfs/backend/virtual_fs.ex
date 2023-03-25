@@ -71,9 +71,14 @@ defmodule Virtfs.Backend.VirtualFS do
   def tree(fs, path) do
     full_path = to_fullpath(fs.cwd, path)
     paths = Map.keys(fs.files)
-    regex = rm_rf_regex(full_path)
+    regex = tree_regex(full_path)
     found = Enum.filter(paths, fn p -> Regex.match?(regex, p) end)
     {:ok, found}
+  end
+
+  defp tree_regex(full_path) do
+    {:ok, regex} = Regex.compile("^#{full_path}/.")
+    regex
   end
 
   def rm_rf(fs, path) do
@@ -124,7 +129,23 @@ defmodule Virtfs.Backend.VirtualFS do
     {:ok, update_fs(fs, :files, files)}
   end
 
-  def cp_r(fs, scr, dest) do
+  def cp_r(fs, src, dest) do
+    full_src = to_fullpath(fs.cwd, src)
+    full_dest = to_fullpath(fs.cwd, dest)
+    paths = Map.keys(fs.files)
+    regex = rm_rf_regex(full_src)
+    found = Enum.filter(paths, fn p -> Regex.match?(regex, p) end)
+
+    fs =
+      Enum.reduce(found, fs, fn path, fs ->
+        file = Map.get(fs.files, path)
+        new_path = String.replace_leading(file.path, full_src, full_dest)
+        file = Map.put(file, :path, new_path)
+        files = Map.put(fs.files, new_path, file)
+        update_fs(fs, :files, files)
+      end)
+
+    {:ok, fs}
   end
 
   def rename(fs, src, dest) do
@@ -209,7 +230,7 @@ defmodule Virtfs.Backend.VirtualFS do
   end
 
   defp to_fullpath(cwd, path) do
-    path = String.replace(path, "//", "/")
+    path = normalize_path(path)
 
     res =
       if String.starts_with?(path, "/") do
@@ -219,6 +240,10 @@ defmodule Virtfs.Backend.VirtualFS do
       end
 
     Virtfs.Path.expand_dot(res)
+  end
+
+  defp normalize_path(path) do
+    String.replace(path, "//", "/")
   end
 
   defp update_fs(fs, :files, files) do
