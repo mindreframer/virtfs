@@ -158,7 +158,7 @@ defmodule Virtfs.Backend.VirtualFSTest do
       {:ok, fs} = VirtualFS.write(fs, "file1.txt", "content")
       {:ok, fs} = VirtualFS.write(fs, "file2.txt", "content")
 
-      auto_assert({:ok, ["/", "/file1.txt", "/file2.txt"]} <- VirtualFS.ls(fs, "/"))
+      auto_assert({:ok, ["/file1.txt", "/file2.txt"]} <- VirtualFS.ls(fs, "/"))
     end
   end
 
@@ -293,7 +293,7 @@ defmodule Virtfs.Backend.VirtualFSTest do
       {:ok, fs} = VirtualFS.write(fs, "file1.txt", "content")
       {:ok, fs} = VirtualFS.cp(fs, "file1.txt", "file2.txt")
 
-      auto_assert({:ok, ["/", "/file1.txt", "/file2.txt"]} <- VirtualFS.ls(fs, "/"))
+      auto_assert({:ok, ["/file1.txt", "/file2.txt"]} <- VirtualFS.ls(fs, "/"))
       auto_assert({:ok, "content"} <- VirtualFS.read(fs, "file2.txt"))
     end
 
@@ -302,7 +302,7 @@ defmodule Virtfs.Backend.VirtualFSTest do
       {:ok, fs} = VirtualFS.write(fs, "folder/file1.txt", "content")
       {:ok, fs} = VirtualFS.cp(fs, "folder", "folder2")
 
-      auto_assert({:ok, ["/", "/folder"]} <- VirtualFS.ls(fs, "/"))
+      auto_assert({:ok, ["/folder"]} <- VirtualFS.ls(fs, "/"))
       auto_assert({:error, :not_found} <- VirtualFS.ls(fs, "/folder2"))
     end
   end
