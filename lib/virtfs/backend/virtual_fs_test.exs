@@ -235,7 +235,7 @@ defmodule Virtfs.Backend.VirtualFSTest do
   end
 
   describe "rename" do
-    test "works" do
+    test "works with existing files" do
       fs = Virtfs.init()
       {:ok, fs} = VirtualFS.cd(fs, "/first/second/third")
       {:ok, fs} = VirtualFS.mkdir_p(fs, "my/nested/folder")
@@ -268,6 +268,13 @@ defmodule Virtfs.Backend.VirtualFSTest do
            "/first/second/third/my/nested/folder"
          ]} <- VirtualFS.tree(fs, "/first/second")
       )
+    end
+
+    test "does not work with missing files - FIXME silent failure" do
+      fs = Virtfs.init()
+      {:ok, fs} = VirtualFS.write(fs, "file1.txt", "content")
+      {:ok, fs} = VirtualFS.rename(fs, "missing.txt", "file1.txt")
+      auto_assert({:ok, ["/file1.txt"]} <- VirtualFS.tree(fs, "/"))
     end
   end
 end
