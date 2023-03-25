@@ -1,4 +1,5 @@
 %{
+  "erlmemfs": {:hex, :erlmemfs, "0.1.0", "47190ba63e955bea934f18a9b801e54c1e5434abd5b2e977ea35ebb0aa04c46e", [:rebar3], [], "hexpm", "3952329afca17a4bf1fc02e161aec793fe603ef41026eedac4f2cdccf90bb035"},
   "glob_ex": {:hex, :glob_ex, "0.1.1", "dc652ac17aeab97392da3beb73ff24f4e4de061b717ca7e75818e869e5acd104", [:mix], [], "hexpm", "d27bc551f9fd92b96c7bad687aba1a7cd5eeaaec7170c55add227f395f89e3af"},
   "libgraph": {:hex, :libgraph, "0.16.0", "3936f3eca6ef826e08880230f806bfea13193e49bf153f93edcf0239d4fd1d07", [:mix], [], "hexpm", "41ca92240e8a4138c30a7e06466acc709b0cbb795c643e9e17174a178982d6bf"},
   "mneme": {:hex, :mneme, "0.2.2", "bd2eaad991172570f5f548f0e65dfea5c9e06e91a1a76488e79e6dbbab136085", [:mix], [{:libgraph, "~> 0.16.0", [hex: :libgraph, repo: "hexpm", optional: false]}, {:nimble_options, "~> 1.0", [hex: :nimble_options, repo: "hexpm", optional: false]}, {:owl, "~> 0.6.0", [hex: :owl, repo: "hexpm", optional: false]}, {:rewrite, "~> 0.6.0", [hex: :rewrite, repo: "hexpm", optional: false]}, {:sourceror, "~> 0.12", [hex: :sourceror, repo: "hexpm", optional: false]}], "hexpm", "1100f61697f035ed3d465f290e0062761753d940f9e9610eb8894a421188a077"},
