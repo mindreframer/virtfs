@@ -91,7 +91,7 @@ defmodule Virtfs.Backend.VirtualFSTest do
       {:ok, fs} = VirtualFS.write(fs, "path2.txt", "path2")
       {:ok, fs} = VirtualFS.rm(fs, "/first")
 
-      auto_assert({:ok, ["/first", "/first/second"]} <- VirtualFS.ls(fs, "/first"))
+      auto_assert({:ok, ["/first/second"]} <- VirtualFS.ls(fs, "/first"))
     end
   end
 
@@ -129,6 +129,28 @@ defmodule Virtfs.Backend.VirtualFSTest do
 
   describe "ls" do
     test "works for the current folder" do
+      fs = Virtfs.init()
+      {:ok, fs} = VirtualFS.cd(fs, "/first/second/third")
+      {:ok, fs} = VirtualFS.mkdir_p(fs, "my/nested/folder")
+      {:ok, fs} = VirtualFS.mkdir_p(fs, "my/nested/folder2")
+      {:ok, fs} = VirtualFS.mkdir_p(fs, "my/nested/folder3")
+      {:ok, fs} = VirtualFS.write(fs, "my/nested/folder/file.txt", "content")
+
+      auto_assert({:ok, ["/first/second/third/my/nested"]} <- VirtualFS.ls(fs, "my"))
+
+      auto_assert(
+        {:ok,
+         [
+           "/first/second/third/my/nested/folder",
+           "/first/second/third/my/nested/folder2",
+           "/first/second/third/my/nested/folder3"
+         ]} <- VirtualFS.ls(fs, "my/nested")
+      )
+
+      auto_assert(
+        {:ok, ["/first/second/third/my/nested/folder/file.txt"]} <-
+          VirtualFS.ls(fs, "my/nested/folder")
+      )
     end
   end
 

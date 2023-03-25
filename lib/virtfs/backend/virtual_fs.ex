@@ -42,11 +42,9 @@ defmodule Virtfs.Backend.VirtualFS do
   def ls(fs, path) do
     full_path = to_fullpath(fs.cwd, path)
     paths = Map.keys(fs.files)
-
-    {:ok, regex} = Regex.compile("#{full_path}[/]?[^/]*$")
-
-    # \/a\/b[\/]?[^\/]?$
-    # Regex.compile("/a/b[/]?[^/]*$")
+    # everything with full_path + slash + non-slash chars at the end of path
+    # takes only paths one level deeper then the given path
+    {:ok, regex} = Regex.compile("#{full_path}/[^/]*$")
     found = Enum.filter(paths, fn p -> Regex.match?(regex, p) end)
     {:ok, found}
   end
