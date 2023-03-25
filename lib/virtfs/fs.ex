@@ -1,6 +1,7 @@
 defmodule Virtfs.FS do
-  alias Virtfs.Backend.Virtual
-  alias Virtfs.File
+  alias Virtfs.FS
+  alias Virtfs.Backend.VirtualFS
+  alias Virtfs.Backend.RealFS
 
   @type kind :: :real | :virt
   use TypedStruct
@@ -9,8 +10,24 @@ defmodule Virtfs.FS do
     @typedoc "Virtual Filesystem"
 
     field(:kind, kind, default: :virt)
-    field(:backend, Virtfs.Behaviour, default: Virtual)
+    field(:backend, Virtfs.Behaviour, default: VirtualFS)
     field(:cwd, String.t(), default: "/")
-    field(:files, list(File.t()))
+    field(:files, map())
   end
+
+  def init(opts \\ []) do
+    type = Keyword.get(opts, :type, :virt)
+    path = Keyword.get(opts, :path, "/")
+    backend = backend_for(type)
+
+    %FS{
+      kind: type,
+      files: %{},
+      cwd: path,
+      backend: backend
+    }
+  end
+
+  def backend_for(:virt), do: VirtualFS
+  def backend_for(:real), do: RealFS
 end

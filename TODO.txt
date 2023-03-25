@@ -1,0 +1,18 @@
+
+
+- https://github.com/Raphexion/erlmemfs/blob/master/src/erlmemfs_support.erl
+
+
+-export([root/0,
+move_up/1,
+move_ups/2,
+find_root/1,
+move_down/2,
+path_to_parts/1,
+mkdirs/2,
+backup_dir/1]).
+
+
+
+Discussion on Elixirforum:
+- https://elixirforum.com/t/faking-filesystem-access-during-tests/243/8
