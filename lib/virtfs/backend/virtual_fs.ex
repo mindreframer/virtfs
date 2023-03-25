@@ -71,7 +71,8 @@ defmodule Virtfs.Backend.VirtualFS do
   def tree(fs, path) do
     full_path = to_fullpath(fs.cwd, path)
     paths = Map.keys(fs.files)
-    found = Enum.filter(paths, fn p -> String.contains?(p, full_path) end)
+    regex = rm_rf_regex(full_path)
+    found = Enum.filter(paths, fn p -> Regex.match?(regex, p) end)
     {:ok, found}
   end
 
