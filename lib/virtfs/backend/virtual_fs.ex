@@ -41,10 +41,19 @@ defmodule Virtfs.Backend.VirtualFS do
 
   def ls(fs, path) do
     full_path = to_fullpath(fs.cwd, path)
-    paths = Map.keys(fs.files)
-    regex = ls_regex(full_path)
-    found = Enum.filter(paths, fn p -> Regex.match?(regex, p) end)
-    {:ok, found}
+
+    dir = Map.get(fs.files, full_path)
+
+    cond do
+      dir != nil && dir.kind == :dir ->
+        paths = Map.keys(fs.files)
+        regex = ls_regex(full_path)
+        found = Enum.filter(paths, fn p -> Regex.match?(regex, p) end)
+        {:ok, found}
+
+      true ->
+        {:error, :not_found}
+    end
   end
 
   defp ls_regex("/") do

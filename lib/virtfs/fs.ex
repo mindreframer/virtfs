@@ -22,7 +22,9 @@ defmodule Virtfs.FS do
 
     %FS{
       kind: type,
-      files: %{},
+      files: %{
+        "/" => Virtfs.File.new_dir("/")
+      },
       cwd: path,
       backend: backend
     }
