@@ -4,38 +4,68 @@ defmodule Virtfs.Backend.VirtualFSTest do
 
   alias Virtfs.Backend.VirtualFS
 
-  test "1" do
-    fs = Virtfs.init()
-    {:ok, fs} = VirtualFS.write(fs, "/path.txt", "path")
-    {:ok, fs} = VirtualFS.write(fs, "/path2.txt", "path2")
+  describe "write" do
+    test "works" do
+      fs = Virtfs.init()
+      {:ok, fs} = VirtualFS.write(fs, "/path.txt", "path")
+      {:ok, fs} = VirtualFS.write(fs, "/path2.txt", "path2")
 
-    auto_assert(
-      %{
-        "/path.txt" => %Virtfs.File{content: "path", path: "/path.txt"},
-        "/path2.txt" => %Virtfs.File{content: "path2", path: "/path2.txt"}
-      } <- fs.files
-    )
+      auto_assert(
+        %{
+          "/path.txt" => %Virtfs.File{content: "path", path: "/path.txt"},
+          "/path2.txt" => %Virtfs.File{content: "path2", path: "/path2.txt"}
+        } <- fs.files
+      )
+    end
+
+    test "cwd is considered" do
+      fs = Virtfs.init()
+      {:ok, fs} = VirtualFS.cd(fs, "first/second")
+      {:ok, fs} = VirtualFS.write(fs, "path.txt", "path")
+      {:ok, fs} = VirtualFS.write(fs, "path2.txt", "path2")
+
+      auto_assert(
+        %{
+          "/first" => %Virtfs.File{kind: :dir, path: "/first"},
+          "/first/second" => %Virtfs.File{kind: :dir, path: "/first/second"},
+          "/first/second/path.txt" => %Virtfs.File{
+            content: "path",
+            path: "/first/second/path.txt"
+          },
+          "/first/second/path2.txt" => %Virtfs.File{
+            content: "path2",
+            path: "/first/second/path2.txt"
+          }
+        } <- fs.files
+      )
+    end
   end
 
-  test "cwd is considered" do
-    fs = Virtfs.init()
-    {:ok, fs} = VirtualFS.cd(fs, "first/second")
-    {:ok, fs} = VirtualFS.write(fs, "path.txt", "path")
-    {:ok, fs} = VirtualFS.write(fs, "path2.txt", "path2")
+  describe "read" do
+    test "works - simple" do
+      fs = Virtfs.init()
+      {:ok, fs} = VirtualFS.write(fs, "/path.txt", "path")
+      {:ok, fs} = VirtualFS.write(fs, "/path2.txt", "path2")
 
-    auto_assert(
-      %{
-        "/first/second/path.txt" => %Virtfs.File{content: "path", path: "/first/second/path.txt"},
-        "/first/second/path2.txt" => %Virtfs.File{
-          content: "path2",
-          path: "/first/second/path2.txt"
-        }
-      } <- fs.files
-    )
+      auto_assert({:ok, "path"} <- VirtualFS.read(fs, "/path.txt"))
+      auto_assert({:ok, "path2"} <- VirtualFS.read(fs, "/path2.txt"))
+    end
+
+    test "works - nested" do
+      fs = Virtfs.init()
+
+      {:ok, fs} = VirtualFS.cd(fs, "first/second")
+      {:ok, fs} = VirtualFS.write(fs, "path.txt", "path")
+      {:ok, fs} = VirtualFS.write(fs, "path2.txt", "path2")
+
+      auto_assert({:ok, "path"} <- VirtualFS.read(fs, "path.txt"))
+      auto_assert({:ok, "path"} <- VirtualFS.read(fs, "/first/second/path.txt"))
+      auto_assert({:error, :not_found} <- VirtualFS.read(fs, "/path.txt"))
+    end
   end
 
   describe "rm" do
-    test "works for files" do
+    test "works only for files" do
       fs = Virtfs.init()
       {:ok, fs} = VirtualFS.cd(fs, "first/second")
       {:ok, fs} = VirtualFS.write(fs, "path.txt", "path")
@@ -44,6 +74,8 @@ defmodule Virtfs.Backend.VirtualFSTest do
 
       auto_assert(
         %{
+          "/first" => %Virtfs.File{kind: :dir, path: "/first"},
+          "/first/second" => %Virtfs.File{kind: :dir, path: "/first/second"},
           "/first/second/path2.txt" => %Virtfs.File{
             content: "path2",
             path: "/first/second/path2.txt"
@@ -52,23 +84,14 @@ defmodule Virtfs.Backend.VirtualFSTest do
       )
     end
 
-    test "works for dirs" do
-      #   fs = Virtfs.init()
-      #   {:ok, fs} = VirtualFS.cd(fs, "first/second")
-      #   {:ok, fs} = VirtualFS.write(fs, "path.txt", "path")
-      #   {:ok, fs} = VirtualFS.write(fs, "path2.txt", "path2")
-      #   {:ok, fs} = VirtualFS.rm(fs, "path.txt")
-      #   {:ok, fs} = VirtualFS.cd(fs, "..")
-      #   {:ok, fs} = VirtualFS.cd(fs, "..")
+    test "does not work for folders" do
+      fs = Virtfs.init()
+      {:ok, fs} = VirtualFS.cd(fs, "first/second")
+      {:ok, fs} = VirtualFS.write(fs, "path.txt", "path")
+      {:ok, fs} = VirtualFS.write(fs, "path2.txt", "path2")
+      {:ok, fs} = VirtualFS.rm(fs, "/first")
 
-      #   auto_assert(
-      #     %{
-      #       "/first/second/path2.txt" => %Virtfs.File{
-      #         content: "path2",
-      #         path: "/first/second/path2.txt"
-      #       }
-      #     } <- fs.files
-      #   )
+      auto_assert({:ok, ["/first", "/first/second"]} <- VirtualFS.ls(fs, "/first"))
     end
   end
 
@@ -104,6 +127,11 @@ defmodule Virtfs.Backend.VirtualFSTest do
     end
   end
 
+  describe "ls" do
+    test "works for the current folder" do
+    end
+  end
+
   describe "mkdir_p" do
     test "creates full hierarchy of folders" do
       fs = Virtfs.init()
@@ -111,15 +139,38 @@ defmodule Virtfs.Backend.VirtualFSTest do
       {:ok, fs} = VirtualFS.mkdir_p(fs, "my/nested/folder")
 
       auto_assert(
-        {:ok,
-         [
-           "/first",
-           "/first/second",
-           "/first/second/third",
-           "/first/second/third/my",
-           "/first/second/third/my/nested",
-           "/first/second/third/my/nested/folder"
-         ]} <- VirtualFS.ls(fs, "/")
+        %{
+          "/first" => %Virtfs.File{kind: :dir, path: "/first"},
+          "/first/second" => %Virtfs.File{kind: :dir, path: "/first/second"},
+          "/first/second/third" => %Virtfs.File{kind: :dir, path: "/first/second/third"},
+          "/first/second/third/my" => %Virtfs.File{kind: :dir, path: "/first/second/third/my"},
+          "/first/second/third/my/nested" => %Virtfs.File{
+            kind: :dir,
+            path: "/first/second/third/my/nested"
+          },
+          "/first/second/third/my/nested/folder" => %Virtfs.File{
+            kind: :dir,
+            path: "/first/second/third/my/nested/folder"
+          }
+        } <- fs.files
+      )
+    end
+
+    test "does not duplicate folders" do
+      fs = Virtfs.init()
+      {:ok, fs} = VirtualFS.cd(fs, "/first/")
+      {:ok, fs} = VirtualFS.mkdir_p(fs, "my/nested/folder")
+      {:ok, fs} = VirtualFS.mkdir_p(fs, "my/nested/folder")
+      {:ok, fs} = VirtualFS.cd(fs, "..")
+      {:ok, fs} = VirtualFS.mkdir_p(fs, "first/my/nested/folder")
+
+      auto_assert(
+        %{
+          "/first" => %Virtfs.File{kind: :dir, path: "/first"},
+          "/first/my" => %Virtfs.File{kind: :dir, path: "/first/my"},
+          "/first/my/nested" => %Virtfs.File{kind: :dir, path: "/first/my/nested"},
+          "/first/my/nested/folder" => %Virtfs.File{kind: :dir, path: "/first/my/nested/folder"}
+        } <- fs.files
       )
     end
   end
