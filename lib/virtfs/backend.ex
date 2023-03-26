@@ -11,7 +11,7 @@ defmodule Virtfs.Backend do
     file = %File{path: full_path, content: content}
     files = Map.put(fs.files, full_path, file)
 
-    {:ok, update_fs(fs, :files, files)}
+    ok(update_fs(fs, :files, files))
   end
 
   def read(fs, path) do
@@ -19,8 +19,8 @@ defmodule Virtfs.Backend do
     file = Map.get(fs.files, full_path)
 
     cond do
-      file == nil -> @error_not_found
-      true -> {:ok, file.content}
+      file == nil -> error(fs, @error_not_found)
+      true -> ok(fs, {:ok, file.content})
     end
   end
 
@@ -36,7 +36,7 @@ defmodule Virtfs.Backend do
         file.kind == :file -> Map.delete(fs.files, full_path)
       end
 
-    {:ok, update_fs(fs, :files, files)}
+    ok(update_fs(fs, :files, files))
   end
 
   def ls(fs, path) do
@@ -49,10 +49,10 @@ defmodule Virtfs.Backend do
         paths = Map.keys(fs.files)
         regex = ls_regex(full_path)
         found = Enum.filter(paths, fn p -> Regex.match?(regex, p) end)
-        {:ok, found}
+        ok(fs, found)
 
       true ->
-        @error_not_found
+        error(fs, :not_found)
     end
   end
 
@@ -73,7 +73,8 @@ defmodule Virtfs.Backend do
     paths = Map.keys(fs.files)
     regex = tree_regex(full_path)
     found = Enum.filter(paths, fn p -> Regex.match?(regex, p) end)
-    {:ok, found}
+
+    ok(fs, found)
   end
 
   defp tree_regex("/") do
@@ -97,7 +98,7 @@ defmodule Virtfs.Backend do
         Map.delete(files, p)
       end)
 
-    {:ok, update_fs(fs, :files, files)}
+    ok(update_fs(fs, :files, files))
   end
 
   defp rm_rf_regex(full_path) do
@@ -115,7 +116,7 @@ defmodule Virtfs.Backend do
         true -> fs
       end
 
-    {:ok, fs}
+    ok(fs)
   end
 
   def cp(fs, src, dest) do
@@ -131,7 +132,7 @@ defmodule Virtfs.Backend do
         file.kind == :file -> Map.put(fs.files, full_dest, Map.put(file, :path, full_dest))
       end
 
-    {:ok, update_fs(fs, :files, files)}
+    ok(update_fs(fs, :files, files))
   end
 
   def cp_r(fs, src, dest) do
@@ -150,7 +151,7 @@ defmodule Virtfs.Backend do
         update_fs(fs, :files, files)
       end)
 
-    {:ok, fs}
+    ok(fs)
   end
 
   def rename(fs, src, dest) do
@@ -171,19 +172,19 @@ defmodule Virtfs.Backend do
           Map.delete(fs.files, full_src) |> Map.put(full_dest, Map.put(file, :path, full_dest))
       end
 
-    {:ok, update_fs(fs, :files, files)}
+    ok(update_fs(fs, :files, files))
   end
 
   ## Nav
   def cd(fs, path) do
     full_path = to_fullpath(fs.cwd, path)
-    {:ok, update_fs(fs, :cwd, full_path)}
+    ok(update_fs(fs, :cwd, full_path))
   end
 
   def exists?(fs, path) do
     full_path = to_fullpath(fs.cwd, path)
     file = Map.get(fs.files, full_path)
-    {:ok, file != nil}
+    ok(fs, file != nil)
   end
 
   def dir?(fs, path) do
@@ -197,7 +198,7 @@ defmodule Virtfs.Backend do
         true -> false
       end
 
-    {:ok, res}
+    ok(fs, res)
   end
 
   ###
@@ -209,7 +210,8 @@ defmodule Virtfs.Backend do
 
     file = File.new_file(full_path, "")
     files = Map.put(fs.files, full_path, file)
-    {:ok, update_fs(fs, :files, files)}
+
+    ok(update_fs(fs, :files, files))
   end
 
   defp touch_dir(fs, path) do
@@ -217,7 +219,7 @@ defmodule Virtfs.Backend do
 
     file = File.new_dir(full_path)
     files = Map.put(fs.files, full_path, file)
-    {:ok, update_fs(fs, :files, files)}
+    ok(update_fs(fs, :files, files))
   end
 
   defp gen_full_hierarchy(fs, path) do
@@ -230,7 +232,7 @@ defmodule Virtfs.Backend do
       end)
 
     Enum.reduce(folders, fs, fn folder, fs ->
-      {:ok, fs} = touch_dir(fs, folder)
+      {fs, :ok} = touch_dir(fs, folder)
       fs
     end)
   end
@@ -259,4 +261,9 @@ defmodule Virtfs.Backend do
   defp update_fs(fs, :cwd, path) do
     %FS{fs | cwd: path}
   end
+
+  defp ok(fs), do: {fs, :ok}
+  defp ok(fs, res), do: {fs, {:ok, res}}
+  # defp error(fs), do: {fs, :error}
+  defp error(fs, res), do: {fs, {:error, res}}
 end
