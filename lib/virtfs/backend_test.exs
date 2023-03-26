@@ -374,7 +374,18 @@ defmodule Virtfs.BackendTest do
     test "does not work for folders" do
       fs = Virtfs.init()
       {fs, :ok} = Backend.write(fs, "folder/file1.txt", "content")
-      {fs, :ok} = Backend.cp(fs, "folder", "folder2")
+      {fs, {:error, :source_is_dir}} = Backend.cp(fs, "folder", "folder2")
+
+      auto_assert({:ok, ["/folder"]} <- Backend.ls(fs, "/") |> Util.ok!())
+      auto_assert({:error, :not_found} <- Backend.ls(fs, "/folder2") |> Util.error!())
+    end
+
+    test "does not work for non-existing files" do
+      fs = Virtfs.init()
+      {fs, :ok} = Backend.write(fs, "folder/file1.txt", "content")
+
+      {fs, {:error, :source_not_found}} =
+        Backend.cp(fs, "folder/file-does-not-exist.txt", "folder2")
 
       auto_assert({:ok, ["/folder"]} <- Backend.ls(fs, "/") |> Util.ok!())
       auto_assert({:error, :not_found} <- Backend.ls(fs, "/folder2") |> Util.error!())

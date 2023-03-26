@@ -128,14 +128,22 @@ defmodule Virtfs.Backend do
 
     file = Map.get(fs.files, full_src)
 
-    files =
+    {files, res} =
       cond do
-        file == nil -> fs.files
-        file.kind == :dir -> fs.files
-        file.kind == :file -> Map.put(fs.files, full_dest, Map.put(file, :path, full_dest))
+        file == nil ->
+          {fs.files, {:error, :source_not_found}}
+
+        file.kind == :dir ->
+          {fs.files, {:error, :source_is_dir}}
+
+        file.kind == :file ->
+          {Map.put(fs.files, full_dest, Map.put(file, :path, full_dest)), :ok}
       end
 
-    ok(update_fs(fs, :files, files))
+    case res do
+      {:error, reason} -> error(fs, reason)
+      :ok -> ok(update_fs(fs, :files, files))
+    end
   end
 
   def cp_r(fs, src, dest) do
