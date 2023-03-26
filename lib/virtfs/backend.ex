@@ -20,7 +20,7 @@ defmodule Virtfs.Backend do
 
     cond do
       file == nil -> error(fs, @error_not_found)
-      true -> ok(fs, {:ok, file.content})
+      true -> ok(fs, file.content)
     end
   end
 
@@ -57,15 +57,17 @@ defmodule Virtfs.Backend do
   end
 
   defp ls_regex("/") do
-    {:ok, regex} = Regex.compile("^/[^/]+$")
-    regex
+    with {:ok, regex} <- Regex.compile("^/[^/]+$") do
+      regex
+    end
   end
 
   defp ls_regex(full_path) do
     # everything with full_path at start + slash + non-slash chars at the end of path
     # takes only paths one level deeper then the given path
-    {:ok, regex} = Regex.compile("^#{full_path}/[^/]+$")
-    regex
+    with {:ok, regex} <- Regex.compile("^#{full_path}/[^/]+$") do
+      regex
+    end
   end
 
   def tree(fs, path) do
@@ -102,8 +104,9 @@ defmodule Virtfs.Backend do
   end
 
   defp rm_rf_regex(full_path) do
-    {:ok, regex} = Regex.compile("^#{full_path}*")
-    regex
+    with {:ok, regex} <- Regex.compile("^#{full_path}*") do
+      regex
+    end
   end
 
   def mkdir_p(fs, path) do
