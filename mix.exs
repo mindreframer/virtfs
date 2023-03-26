@@ -1,15 +1,21 @@
 defmodule Virtfs.MixProject do
   use Mix.Project
+  @github_url "https://github.com/mindreframer/virtfs"
+  @version "0.1.0"
+  @description "Virtfs allows mock-FS operations, that can be applied on a real FS folder"
 
   def project do
     [
       app: :virtfs,
-      version: "0.1.0",
+      source_url: @github_url,
+      version: @version,
+      description: @description,
       elixir: "~> 1.14",
       test_paths: ["test", "lib"],
       test_pattern: "*_test.exs",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      package: package()
     ]
   end
 
@@ -21,10 +27,22 @@ defmodule Virtfs.MixProject do
     ]
   end
 
+  defp package do
+    [
+      files: ~w(lib mix.exs README* CHANGELOG*),
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => @github_url,
+        "CHANGELOG" => "https://github.com/mindreframer/virtfs/blob/main/CHANGELOG.md"
+      }
+    ]
+  end
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:typed_struct, "~> 0.3.0"},
+      {:ex_doc, "~> 0.29", only: :dev, runtime: false},
       {:mneme, "~> 0.2.5", only: [:test]},
       {:test_iex, github: "mindreframer/test_iex", only: [:test]}
     ]
