@@ -226,14 +226,14 @@ defmodule Virtfs.Backend do
   ### HELPERS
   ###
 
-  defp touch_file(fs, path) do
-    full_path = to_fullpath(fs.cwd, path)
+  # defp touch_file(fs, path) do
+  #   full_path = to_fullpath(fs.cwd, path)
 
-    file = File.new_file(full_path, "")
-    files = Map.put(fs.files, full_path, file)
+  #   file = File.new_file(full_path, "")
+  #   files = Map.put(fs.files, full_path, file)
 
-    ok(update_fs(fs, :files, files))
-  end
+  #   ok(update_fs(fs, :files, files))
+  # end
 
   defp touch_dir(fs, path) do
     full_path = to_fullpath(fs.cwd, path)
