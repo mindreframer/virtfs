@@ -6,6 +6,16 @@ defmodule Virtfs.Backend do
   def write(%FS{} = fs, path, content) do
     full_path = Path.join(fs.cwd, path)
 
+    file = Map.get(fs.files, full_path)
+
+    cond do
+      file == nil -> write_safe(fs, full_path, content)
+      file.kind == :dir -> error(fs, :source_is_dir)
+      true -> write_safe(fs, full_path, content)
+    end
+  end
+
+  defp write_safe(fs, full_path, content) do
     dirpath = Path.dirname(full_path)
     fs = gen_full_hierarchy(fs, dirpath)
     file = %File{path: full_path, content: content}

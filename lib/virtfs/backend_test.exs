@@ -35,6 +35,12 @@ defmodule Virtfs.BackendTest do
         } <- fs.files
       )
     end
+
+    test "to folders does not work" do
+      fs = Virtfs.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b")
+      {_fs, {:error, :source_is_dir}} = Backend.write(fs, "a/b", "content")
+    end
   end
 
   describe "read" do
