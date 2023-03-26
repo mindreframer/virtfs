@@ -11,6 +11,8 @@ defmodule Virtfs.Loader do
       cond do
         type == :dir -> Backend.mkdir_p(fs, relpath) |> elem(0)
         type == :file -> Backend.write(fs, relpath, File.read!(path)) |> elem(0)
+        # we ignore symlinks for now
+        type == :symlink -> fs
       end
     end)
   end
@@ -20,11 +22,21 @@ defmodule Virtfs.Loader do
   end
 
   def ftype(path) do
-    stat = File.stat!(path)
+    res = File.stat(path)
 
-    cond do
-      stat.type == :regular -> :file
-      stat.type == :directory -> :dir
+    case res do
+      {:ok, %{type: :regular}} -> :file
+      {:ok, %{type: :directory}} -> :dir
+      {:error, :enoent} -> check_symlink(path)
+    end
+  end
+
+  def check_symlink(path) do
+    res = File.read_link(path)
+
+    case res do
+      {:ok, _link_path} -> :symlink
+      {:error, _} -> :error
     end
   end
 end
