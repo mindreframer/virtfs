@@ -319,12 +319,24 @@ defmodule Virtfs.BackendTest do
       )
     end
 
-    test "does not work with missing files - FIXME silent failure" do
+    test "does not work with missing files" do
       fs = Virtfs.init()
       {fs, :ok} = Backend.write(fs, "file1.txt", "content")
-      {fs, :ok} = Backend.rename(fs, "missing.txt", "file1.txt")
+      {fs, {:error, :source_not_found}} = Backend.rename(fs, "missing.txt", "file1.txt")
 
       auto_assert({:ok, ["/file1.txt"]} <- Backend.tree(fs, "/") |> Util.ok!())
+    end
+
+    test "also renames subfolders and subfiles" do
+      fs = Virtfs.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b/c/d")
+      {fs, :ok} = Backend.write(fs, "a/b/file1.txt", "content")
+      {fs, :ok} = Backend.rename(fs, "a/b", "a/GGG")
+
+      auto_assert(
+        {:ok, ["/a/GGG/c", "/a/GGG/c/d", "/a/GGG/file1.txt", "/a/b"]} <-
+          Backend.tree(fs, "/a") |> Util.ok!()
+      )
     end
   end
 

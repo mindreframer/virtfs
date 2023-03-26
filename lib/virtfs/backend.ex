@@ -180,20 +180,56 @@ defmodule Virtfs.Backend do
     full_dest = to_fullpath(fs.cwd, dest)
     file = Map.get(fs.files, full_src)
 
-    files =
+    {files, res} =
       cond do
         file == nil ->
-          fs.files
+          {fs.files, {:error, :source_not_found}}
 
         file.kind == :dir ->
-          # TODO we need to rename also subfolders / subfiles!
-          Map.delete(fs.files, full_src) |> Map.put(full_dest, Map.put(file, :path, full_dest))
+          paths = Map.keys(fs.files)
+          regex = rename_regex(full_src)
+          found = Enum.filter(paths, fn p -> Regex.match?(regex, p) end)
+
+          fs =
+            Enum.reduce(found, fs, fn path, fs ->
+              rename_existing(fs, path, full_src, full_dest)
+            end)
+
+          {fs.files, :ok}
 
         file.kind == :file ->
-          Map.delete(fs.files, full_src) |> Map.put(full_dest, Map.put(file, :path, full_dest))
+          files =
+            Map.delete(fs.files, full_src) |> Map.put(full_dest, Map.put(file, :path, full_dest))
+
+          {files, :ok}
       end
 
-    ok(update_fs(fs, :files, files))
+    case res do
+      :ok -> ok(update_fs(fs, :files, files))
+      {:error, reason} -> error(fs, reason)
+    end
+  end
+
+  defp rename_existing(fs, path, full_src, full_dest) do
+    file = Map.get(fs.files, path)
+    path_dest = String.replace_leading(path, full_src, full_dest)
+    dest_file = Map.put(file, :path, path_dest)
+
+    files =
+      Map.delete(fs.files, path)
+      |> Map.put(path_dest, dest_file)
+
+    update_fs(fs, :files, files)
+  end
+
+  defp rename_regex("/") do
+    {:ok, regex} = Regex.compile("^/.")
+    regex
+  end
+
+  defp rename_regex(full_path) do
+    {:ok, regex} = Regex.compile("^#{full_path}[\/]?.")
+    regex
   end
 
   ## Nav
