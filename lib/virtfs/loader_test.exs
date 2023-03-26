@@ -2,14 +2,12 @@ defmodule Virtfs.LoaderTest do
   use ExUnit.Case
   use Mneme, action: :accept, default_pattern: :last
 
-  alias Virtfs.Server
-
   describe "run" do
     test "works" do
-      {:ok, fs} = Server.start_link()
-      Server.mkdir_p!(fs, "/a/b/c")
-      Server.load(fs, fixture_path())
-      data = Server.get_fs(fs)
+      {:ok, fs} = Virtfs.start_link()
+      Virtfs.mkdir_p!(fs, "/a/b/c")
+      Virtfs.load(fs, fixture_path())
+      data = Virtfs.get_fs(fs)
 
       auto_assert(
         %{

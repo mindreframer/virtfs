@@ -3,7 +3,6 @@ defmodule Virtfs.DumperTest do
   use Mneme, action: :accept, default_pattern: :last
 
   alias Virtfs.Dumper
-  alias Virtfs.Server
 
   describe "run" do
     test "works" do
@@ -20,11 +19,11 @@ defmodule Virtfs.DumperTest do
   end
 
   def prepare_fs_struct do
-    {:ok, fs} = Server.start_link()
-    Server.mkdir_p!(fs, "/a/b/c")
-    Server.write!(fs, "/a/b/c/d.txt", "content\nandmore")
-    Server.write!(fs, "/a/b/c/g.txt", "content\nandmore")
-    Server.write!(fs, "/a/file1.txt", "content\nandmore")
-    Server.get_fs(fs)
+    {:ok, fs} = Virtfs.start_link()
+    Virtfs.mkdir_p!(fs, "/a/b/c")
+    Virtfs.write!(fs, "/a/b/c/d.txt", "content\nandmore")
+    Virtfs.write!(fs, "/a/b/c/g.txt", "content\nandmore")
+    Virtfs.write!(fs, "/a/file1.txt", "content\nandmore")
+    Virtfs.get_fs(fs)
   end
 end
