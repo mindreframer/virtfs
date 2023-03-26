@@ -325,10 +325,6 @@ defmodule Virtfs.Backend do
     Virtfs.Util.to_fullpath(cwd, path)
   end
 
-  defp normalize_path(path) do
-    String.replace(path, "//", "/")
-  end
-
   defp update_fs(fs, :files, files) do
     %FS{fs | files: files}
   end
