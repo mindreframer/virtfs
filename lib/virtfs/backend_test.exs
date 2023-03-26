@@ -7,7 +7,7 @@ defmodule Virtfs.BackendTest do
 
   describe "write" do
     test "works" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.write(fs, "/path.txt", "path")
       {fs, :ok} = Backend.write(fs, "/path2.txt", "path2")
 
@@ -20,7 +20,7 @@ defmodule Virtfs.BackendTest do
     end
 
     test "cwd is considered" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.cd(fs, "a/b")
       {fs, :ok} = Backend.write(fs, "path.txt", "path")
       {fs, :ok} = Backend.write(fs, "path2.txt", "path2")
@@ -37,7 +37,7 @@ defmodule Virtfs.BackendTest do
     end
 
     test "to folders does not work" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.mkdir_p(fs, "a/b")
       {_fs, {:error, :source_is_dir}} = Backend.write(fs, "a/b", "content")
     end
@@ -45,7 +45,7 @@ defmodule Virtfs.BackendTest do
 
   describe "append" do
     test "works" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.write(fs, "/path.txt", "first")
       {fs, :ok} = Backend.append(fs, "/path.txt", "second")
 
@@ -60,7 +60,7 @@ defmodule Virtfs.BackendTest do
 
   describe "append_line" do
     test "works" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.write(fs, "/path.txt", "first")
       {fs, :ok} = Backend.append_line(fs, "/path.txt", "second")
       assert {:ok, "first\nsecond"} == Backend.read(fs, "/path.txt") |> Util.ok!()
@@ -69,7 +69,7 @@ defmodule Virtfs.BackendTest do
 
   describe "read" do
     test "works - simple" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.write(fs, "/path.txt", "path")
       {fs, :ok} = Backend.write(fs, "/path2.txt", "path2")
 
@@ -79,7 +79,7 @@ defmodule Virtfs.BackendTest do
     end
 
     test "works - nested" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
 
       {fs, :ok} = Backend.cd(fs, "a/b")
       {fs, :ok} = Backend.write(fs, "path.txt", "path")
@@ -93,13 +93,13 @@ defmodule Virtfs.BackendTest do
     end
 
     test "returns error for non-existing files" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
 
       auto_assert({:error, :not_found} <- Backend.read(fs, "does-not-exist.txt") |> Util.error!())
     end
 
     test "returns error for folders" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.mkdir_p(fs, "a/b/c")
 
       auto_assert({:error, :source_is_dir} <- Backend.read(fs, "a/b") |> Util.error!())
@@ -108,7 +108,7 @@ defmodule Virtfs.BackendTest do
 
   describe "rm" do
     test "works only for files" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.cd(fs, "a/b")
       {fs, :ok} = Backend.write(fs, "path.txt", "path")
       {fs, :ok} = Backend.write(fs, "path2.txt", "path2")
@@ -125,7 +125,7 @@ defmodule Virtfs.BackendTest do
     end
 
     test "does not work for folders" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.cd(fs, "a/b")
       {fs, :ok} = Backend.write(fs, "path.txt", "path")
       {fs, :ok} = Backend.write(fs, "path2.txt", "path2")
@@ -135,7 +135,7 @@ defmodule Virtfs.BackendTest do
     end
 
     test "does not work for non-existing files" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.write(fs, "path.txt", "content")
       {fs, {:error, :source_not_found}} = Backend.rm(fs, "/does-not-exist.txt")
 
@@ -145,7 +145,7 @@ defmodule Virtfs.BackendTest do
 
   describe "cd" do
     test ".. works" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.cd(fs, "a/b")
       auto_assert("/a/b" <- fs.cwd)
 
@@ -160,7 +160,7 @@ defmodule Virtfs.BackendTest do
     end
 
     test ".. with mixed instructions works" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.cd(fs, "/a/b/c")
       auto_assert("/a/b/c" <- fs.cwd)
 
@@ -177,7 +177,7 @@ defmodule Virtfs.BackendTest do
 
   describe "ls" do
     test "works for the current folder" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.cd(fs, "/a/b/c")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder2")
@@ -198,7 +198,7 @@ defmodule Virtfs.BackendTest do
     end
 
     test "works for top folder" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.write(fs, "file1.txt", "content")
       {fs, :ok} = Backend.write(fs, "file2.txt", "content")
 
@@ -208,7 +208,7 @@ defmodule Virtfs.BackendTest do
 
   describe "tree" do
     test "returns recursivelly files below given path" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.cd(fs, "/a/b/c")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder2")
@@ -229,7 +229,7 @@ defmodule Virtfs.BackendTest do
     end
 
     test "works for root" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.write(fs, "folder/file1.txt", "content")
       {fs, :ok} = Backend.write(fs, "folder/file2.txt", "content")
       {fs, :ok} = Backend.mkdir_p(fs, "folder/sub1/sub2")
@@ -255,7 +255,7 @@ defmodule Virtfs.BackendTest do
 
   describe "mkdir_p" do
     test "creates full hierarchy of folders" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.cd(fs, "/a/b/c")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder")
 
@@ -273,7 +273,7 @@ defmodule Virtfs.BackendTest do
     end
 
     test "does not duplicate folders" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.cd(fs, "/a/")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder")
@@ -294,7 +294,7 @@ defmodule Virtfs.BackendTest do
 
   describe "rm_rf" do
     test "removes a folder with full content (and subfolders)" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.cd(fs, "/a")
       {fs, :ok} = Backend.mkdir_p(fs, "nested/folder")
       {fs, :ok} = Backend.write(fs, "nested/folder/file.txt1", "content")
@@ -331,7 +331,7 @@ defmodule Virtfs.BackendTest do
 
   describe "rename" do
     test "works with existing files" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.cd(fs, "/a/b/c")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder")
       {fs, :ok} = Backend.write(fs, "file1.txt", "content")
@@ -360,7 +360,7 @@ defmodule Virtfs.BackendTest do
     end
 
     test "does not work with missing files" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.write(fs, "file1.txt", "content")
       {fs, {:error, :source_not_found}} = Backend.rename(fs, "missing.txt", "file1.txt")
 
@@ -368,7 +368,7 @@ defmodule Virtfs.BackendTest do
     end
 
     test "also renames subfolders and subfiles" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.mkdir_p(fs, "a/b/c/d")
       {fs, :ok} = Backend.write(fs, "a/b/file1.txt", "content")
       {fs, :ok} = Backend.rename(fs, "a/b", "a/GGG")
@@ -382,7 +382,7 @@ defmodule Virtfs.BackendTest do
 
   describe "cp" do
     test "works for files" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.write(fs, "file1.txt", "content")
       {fs, :ok} = Backend.cp(fs, "file1.txt", "file2.txt")
 
@@ -392,7 +392,7 @@ defmodule Virtfs.BackendTest do
     end
 
     test "does not work for folders" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.write(fs, "folder/file1.txt", "content")
       {fs, {:error, :source_is_dir}} = Backend.cp(fs, "folder", "folder2")
 
@@ -401,7 +401,7 @@ defmodule Virtfs.BackendTest do
     end
 
     test "does not work for non-existing files" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.write(fs, "folder/file1.txt", "content")
 
       {fs, {:error, :source_not_found}} =
@@ -414,7 +414,7 @@ defmodule Virtfs.BackendTest do
 
   describe "cp_r" do
     test "works for files" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.write(fs, "file1.txt", "content")
       {fs, :ok} = Backend.cp_r(fs, "file1.txt", "file2.txt")
 
@@ -424,7 +424,7 @@ defmodule Virtfs.BackendTest do
     end
 
     test "works for folders" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.write(fs, "folder/file1.txt", "content")
       {fs, :ok} = Backend.write(fs, "folder/file2.txt", "content")
       {fs, :ok} = Backend.mkdir_p(fs, "folder/sub1/sub2")
@@ -458,7 +458,7 @@ defmodule Virtfs.BackendTest do
     end
 
     test "has errors for not-existing src files" do
-      fs = Virtfs.init()
+      fs = Virtfs.FS.init()
       {fs, :ok} = Backend.mkdir_p(fs, "a/b/c")
       {_, {:error, :source_not_found}} = Backend.cp_r(fs, "a/does-not-exist", "d/f")
     end
