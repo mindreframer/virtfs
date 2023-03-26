@@ -97,9 +97,17 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.cd(fs, "a/b")
       {fs, :ok} = Backend.write(fs, "path.txt", "path")
       {fs, :ok} = Backend.write(fs, "path2.txt", "path2")
-      {fs, :ok} = Backend.rm(fs, "/first")
+      {fs, {:error, :source_is_dir}} = Backend.rm(fs, "/a")
 
       auto_assert({:ok, ["/a/b"]} <- Backend.ls(fs, "/a") |> Util.ok!())
+    end
+
+    test "does not work for non-existing files" do
+      fs = Virtfs.init()
+      {fs, :ok} = Backend.write(fs, "path.txt", "content")
+      {fs, {:error, :source_not_found}} = Backend.rm(fs, "/does-not-exist.txt")
+
+      auto_assert({:ok, ["/path.txt"]} <- Backend.ls(fs, "/") |> Util.ok!())
     end
   end
 

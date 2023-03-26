@@ -28,15 +28,22 @@ defmodule Virtfs.Backend do
     full_path = to_fullpath(fs.cwd, path)
     file = Map.get(fs.files, full_path)
 
-    files =
+    {files, res} =
       cond do
-        file == nil -> fs.files
-        # FIXME we silently ignore, that it's a directory, for now
-        file.kind == :dir -> fs.files
-        file.kind == :file -> Map.delete(fs.files, full_path)
+        file == nil ->
+          {fs.files, {:error, :source_not_found}}
+
+        file.kind == :dir ->
+          {fs.files, {:error, :source_is_dir}}
+
+        file.kind == :file ->
+          {Map.delete(fs.files, full_path), :ok}
       end
 
-    ok(update_fs(fs, :files, files))
+    case res do
+      {:error, reason} -> error(fs, reason)
+      :ok -> ok(update_fs(fs, :files, files))
+    end
   end
 
   def ls(fs, path) do
@@ -216,7 +223,8 @@ defmodule Virtfs.Backend do
     dest_file = Map.put(file, :path, path_dest)
 
     files =
-      Map.delete(fs.files, path)
+      fs.files
+      |> Map.delete(path)
       |> Map.put(path_dest, dest_file)
 
     update_fs(fs, :files, files)
@@ -261,15 +269,6 @@ defmodule Virtfs.Backend do
   ###
   ### HELPERS
   ###
-
-  # defp touch_file(fs, path) do
-  #   full_path = to_fullpath(fs.cwd, path)
-
-  #   file = File.new_file(full_path, "")
-  #   files = Map.put(fs.files, full_path, file)
-
-  #   ok(update_fs(fs, :files, files))
-  # end
 
   defp touch_dir(fs, path) do
     full_path = to_fullpath(fs.cwd, path)
@@ -321,6 +320,5 @@ defmodule Virtfs.Backend do
 
   defp ok(fs), do: {fs, :ok}
   defp ok(fs, res), do: {fs, {:ok, res}}
-  # defp error(fs), do: {fs, :error}
   defp error(fs, res), do: {fs, {:error, res}}
 end
