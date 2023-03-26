@@ -307,16 +307,7 @@ defmodule Virtfs.Backend do
   end
 
   defp to_fullpath(cwd, path) do
-    path = normalize_path(path)
-
-    res =
-      if String.starts_with?(path, "/") do
-        path
-      else
-        Path.join(cwd, path)
-      end
-
-    Virtfs.Path.expand_dot(res)
+    Virtfs.Util.to_fullpath(cwd, path)
   end
 
   defp normalize_path(path) do

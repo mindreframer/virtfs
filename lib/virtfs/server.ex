@@ -119,6 +119,19 @@ defmodule Virtfs.Server do
     handle_error(dir?(pid, path), {:dir!, path})
   end
 
+  ## Management API
+  def get_fs(pid) do
+    GenServer.call(pid, {:get_fs})
+  end
+
+  def dump(pid, path) do
+    GenServer.call(pid, {:dump, path})
+  end
+
+  def load(pid, path) do
+    GenServer.call(pid, {:load, path})
+  end
+
   ###
   ### GEN SERVER CALLBACKS
   ###
@@ -204,6 +217,25 @@ defmodule Virtfs.Server do
   def handle_call({:dir?, path}, _from, %FS{} = fs) do
     {fs, res} = Backend.dir?(fs, path)
     {:reply, res, fs}
+  end
+
+  ## Management API callbacks
+  @impl true
+  def handle_call({:get_fs}, _from, %FS{} = fs) do
+    {:reply, fs, fs}
+  end
+
+  @impl true
+  def handle_call({:dump, path}, _from, %FS{} = fs) do
+    res = Virtfs.Dumper.run(fs, path)
+    {:reply, res, fs}
+  end
+
+  @impl true
+  def handle_call({:load, path}, _from, %FS{} = fs) do
+    res = Virtfs.Loader.run(fs, path)
+    # set state to result from loader
+    {:reply, res, res}
   end
 
   defp handle_error(res, args) do

@@ -10,4 +10,21 @@ defmodule Virtfs.Util do
   def error!({_fs, {:error, v}}) do
     {:error, v}
   end
+
+  def to_fullpath(cwd, path) do
+    path = normalize_path(path)
+
+    res =
+      if String.starts_with?(path, "/") do
+        path
+      else
+        Path.join(cwd, path)
+      end
+
+    Virtfs.Path.expand_dot(res)
+  end
+
+  def normalize_path(path) do
+    String.replace(path, "//", "/")
+  end
 end

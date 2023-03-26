@@ -1,0 +1,30 @@
+defmodule Virtfs.DumperTest do
+  use ExUnit.Case
+  use Mneme, action: :accept, default_pattern: :last
+
+  alias Virtfs.Dumper
+  alias Virtfs.Server
+
+  describe "run" do
+    test "works" do
+      fs = prepare_fs_struct()
+      dir = System.tmp_dir!() <> "/dumper_test"
+      assert Dumper.run(fs, dir) == :ok
+
+      # files = Path.wildcard(dir <> "**/**")
+      # IO.inspect(files)
+      content = File.read!(Path.join(dir, "/a/b/c/d.txt"))
+      assert content == "content\nandmore"
+      File.rm_rf!(dir)
+    end
+  end
+
+  def prepare_fs_struct do
+    {:ok, fs} = Server.start_link()
+    Server.mkdir_p!(fs, "/a/b/c")
+    Server.write!(fs, "/a/b/c/d.txt", "content\nandmore")
+    Server.write!(fs, "/a/b/c/g.txt", "content\nandmore")
+    Server.write!(fs, "/a/file1.txt", "content\nandmore")
+    Server.get_fs(fs)
+  end
+end
