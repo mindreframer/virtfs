@@ -43,6 +43,30 @@ defmodule Virtfs.BackendTest do
     end
   end
 
+  describe "append" do
+    test "works" do
+      fs = Virtfs.init()
+      {fs, :ok} = Backend.write(fs, "/path.txt", "first")
+      {fs, :ok} = Backend.append(fs, "/path.txt", "second")
+
+      auto_assert(
+        %{
+          "/" => %Virtfs.File{kind: :dir, path: "/"},
+          "/path.txt" => %Virtfs.File{content: "firstsecond", path: "/path.txt"}
+        } <- fs.files
+      )
+    end
+  end
+
+  describe "append_line" do
+    test "works" do
+      fs = Virtfs.init()
+      {fs, :ok} = Backend.write(fs, "/path.txt", "first")
+      {fs, :ok} = Backend.append_line(fs, "/path.txt", "second")
+      assert {:ok, "first\nsecond"} == Backend.read(fs, "/path.txt") |> Util.ok!()
+    end
+  end
+
   describe "read" do
     test "works - simple" do
       fs = Virtfs.init()

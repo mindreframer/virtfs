@@ -31,6 +31,22 @@ defmodule Virtfs.Server do
     handle_error(write(pid, path, content), {:write!, path, content})
   end
 
+  def append(pid, path, content) do
+    GenServer.call(pid, {:append, path, content})
+  end
+
+  def append!(pid, path, content) do
+    handle_error(append(pid, path, content), {:append!, path, content})
+  end
+
+  def append_line(pid, path, content) do
+    GenServer.call(pid, {:append_line, path, content})
+  end
+
+  def append_line!(pid, path, content) do
+    handle_error(append_line(pid, path, content), {:append_line!, path, content})
+  end
+
   def read(pid, path) do
     GenServer.call(pid, {:read, path})
   end
@@ -150,6 +166,18 @@ defmodule Virtfs.Server do
   @impl true
   def handle_call({:write, path, content}, _from, %FS{} = fs) do
     {fs, res} = Backend.write(fs, path, content)
+    {:reply, res, fs}
+  end
+
+  @impl true
+  def handle_call({:append, path, content}, _from, %FS{} = fs) do
+    {fs, res} = Backend.append(fs, path, content)
+    {:reply, res, fs}
+  end
+
+  @impl true
+  def handle_call({:append_line, path, content}, _from, %FS{} = fs) do
+    {fs, res} = Backend.append_line(fs, path, content)
     {:reply, res, fs}
   end
 

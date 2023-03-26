@@ -1,7 +1,6 @@
 defmodule Virtfs.Backend do
   alias Virtfs.File
   alias Virtfs.FS
-  @error_not_found {:error, :not_found}
 
   def write(%FS{} = fs, path, content) do
     full_path = Path.join(fs.cwd, path)
@@ -22,6 +21,22 @@ defmodule Virtfs.Backend do
     files = Map.put(fs.files, full_path, file)
 
     ok(update_fs(fs, :files, files))
+  end
+
+  def append(fs, path, content) do
+    full_path = Path.join(fs.cwd, path)
+
+    file = Map.get(fs.files, full_path)
+
+    cond do
+      file == nil -> write_safe(fs, full_path, content)
+      file.kind == :dir -> error(fs, :source_is_dir)
+      true -> write_safe(fs, full_path, file.content <> content)
+    end
+  end
+
+  def append_line(fs, path, content) do
+    append(fs, path, "\n" <> content)
   end
 
   def read(fs, path) do

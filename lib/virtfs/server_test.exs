@@ -20,6 +20,37 @@ defmodule Virtfs.ServerTest do
     end
   end
 
+  describe "append" do
+    test "simple append works", %{fs: fs} do
+      auto_assert(:ok <- Server.mkdir_p!(fs, "/a"))
+      auto_assert(:ok <- Server.write(fs, "/a/file.txt", "my poem\nand more!"))
+      auto_assert(:ok <- Server.append!(fs, "/a/file.txt", "---more-content"))
+
+      auto_assert(
+        """
+        my poem
+        and more!---more-content\
+        """ <- Server.read!(fs, "/a/file.txt")
+      )
+    end
+
+    test "simple append_line works", %{fs: fs} do
+      auto_assert(:ok <- Server.mkdir_p!(fs, "/a"))
+      auto_assert(:ok <- Server.write(fs, "/a/file.txt", "my poem\nand more!"))
+      auto_assert(:ok <- Server.append_line!(fs, "/a/file.txt", "---more-content"))
+      auto_assert(:ok <- Server.append_line!(fs, "/a/file.txt", "---2more-content"))
+
+      auto_assert(
+        """
+        my poem
+        and more!
+        ---more-content
+        ---2more-content\
+        """ <- Server.read!(fs, "/a/file.txt")
+      )
+    end
+  end
+
   describe "ls!" do
     test "write! / read! work", %{fs: fs} do
       auto_assert(:ok <- Server.mkdir_p!(fs, "/a/b/c"))
