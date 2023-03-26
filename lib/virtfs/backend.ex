@@ -212,6 +212,8 @@ defmodule Virtfs.Backend do
             Enum.reduce(found, fs, fn path, fs ->
               rename_existing(fs, path, full_src, full_dest)
             end)
+            # also handle the src folder itself!
+            |> rename_existing(full_src, full_src, full_dest)
 
           {fs.files, :ok}
 

@@ -55,7 +55,7 @@ defmodule Virtfs.ServerTest do
       auto_assert(:ok <- Server.write(fs, "/a/b/file.txt", "my poem/nand more!"))
       auto_assert(["/a/b/c", "/a/b/file.txt"] <- Server.ls!(fs, "/a/b"))
       auto_assert(:ok <- Server.rename!(fs, "/a/b", "a/new"))
-      auto_assert(["/a", "/a/b", "/a/new/c", "/a/new/file.txt"] <- Server.tree!(fs, "/"))
+      auto_assert(["/a", "/a/new", "/a/new/c", "/a/new/file.txt"] <- Server.tree!(fs, "/"))
     end
 
     test "raises on invalid input", %{fs: fs} do

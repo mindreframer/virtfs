@@ -350,7 +350,7 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.rename(fs, "a/b", "a/GGG")
 
       auto_assert(
-        {:ok, ["/a/GGG/c", "/a/GGG/c/d", "/a/GGG/file1.txt", "/a/b"]} <-
+        {:ok, ["/a/GGG", "/a/GGG/c", "/a/GGG/c/d", "/a/GGG/file1.txt"]} <-
           Backend.tree(fs, "/a") |> Util.ok!()
       )
     end
