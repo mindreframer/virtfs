@@ -1,8 +1,7 @@
-defmodule Virtfs.Backend.VirtualFS do
+defmodule Virtfs.Backend do
   alias Virtfs.File
   alias Virtfs.FS
   @error_not_found {:error, :not_found}
-  # @behaviour Virtfs.Behaviour
 
   def write(%FS{} = fs, path, content) do
     full_path = Path.join(fs.cwd, path)

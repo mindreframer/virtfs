@@ -1,4 +1,4 @@
-defmodule Virtfs.Backend.VirtServer do
+defmodule Virtfs.Server do
   use GenServer
   alias Virtfs.FS
 
