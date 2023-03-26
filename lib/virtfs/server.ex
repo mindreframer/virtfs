@@ -3,6 +3,10 @@ defmodule Virtfs.Server do
   alias Virtfs.FS
   alias Virtfs.Backend
 
+  ###
+  ### API
+  ###
+
   def start_link() do
     start_link(FS.init())
   end
@@ -114,6 +118,10 @@ defmodule Virtfs.Server do
   def dir!(pid, path) do
     handle_error(dir?(pid, path), {:dir!, path})
   end
+
+  ###
+  ### GEN SERVER CALLBACKS
+  ###
 
   @impl true
   def init(%FS{} = fs) do
