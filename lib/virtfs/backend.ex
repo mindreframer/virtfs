@@ -149,6 +149,16 @@ defmodule Virtfs.Backend do
   def cp_r(fs, src, dest) do
     full_src = to_fullpath(fs.cwd, src)
     full_dest = to_fullpath(fs.cwd, dest)
+
+    file = Map.get(fs.files, full_src)
+
+    cond do
+      file == nil -> error(fs, :source_not_found)
+      true -> cp_r_exists(fs, full_src, full_dest)
+    end
+  end
+
+  defp cp_r_exists(fs, full_src, full_dest) do
     paths = Map.keys(fs.files)
     regex = rm_rf_regex(full_src)
     found = Enum.filter(paths, fn p -> Regex.match?(regex, p) end)

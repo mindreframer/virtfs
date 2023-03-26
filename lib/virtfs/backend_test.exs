@@ -436,5 +436,11 @@ defmodule Virtfs.BackendTest do
           Backend.tree(fs, "/folder") |> Util.ok!()
       )
     end
+
+    test "has errors for not-existing src files" do
+      fs = Virtfs.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b/c")
+      {fs, {:error, :source_not_found}} = Backend.cp_r(fs, "a/does-not-exist", "d/f")
+    end
   end
 end
