@@ -5,13 +5,37 @@
 ## Usage
 
 ```elixir
-# start a real FS system
-fs = Virtfs.init(type: :virt, path: "/tmp")
+# Start a virtual FS system and play with it
+alias Virtfs.Server
+{:ok, fs} = Server.start_link()
 
-# start a virtual FS system
-fs = Virtfs.init(type: :real, path: "/tmp")
+# writing
+:ok = Server.write!(fs, "some/file.txt", "content")
+:ok = Server.write!(fs, "some/file2.txt", "content")
+
+# ls
+["/some/file.txt", "/some/file2.txt"] = Server.ls!(fs, "some")
+
+# reading
+"content" = Server.read!(fs, "/some/file2.txt")
+
+# cd
+:ok = Server.cd(fs, "some")
+"content" = Server.read!(fs, "file2.txt")
+
+# tree
+["/some", "/some/file.txt", "/some/file2.txt"] == Server.tree!(fs, "/")
+
+# dump in-memory FS into a folder
+File.rm_rf("/tmp/virtfs_test")
+Server.dump(fs, "/tmp/virtfs_test")
+["file2.txt", "file.txt"] = File.ls!("/tmp/virtfs_test/some")
 
 
+# load files from a folder
+{:ok, fs} = Server.start_link()
+Server.load(fs, "/tmp/virtfs_test")
+["/some", "/some/file.txt", "/some/file2.txt"] = Server.tree!(fs, "/")
 
 ```
 
