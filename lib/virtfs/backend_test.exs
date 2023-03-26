@@ -3,6 +3,7 @@ defmodule Virtfs.BackendTest do
   use Mneme, action: :accept, default_pattern: :last
 
   alias Virtfs.Backend
+  alias Virtfs.Util
 
   describe "write" do
     test "works" do
@@ -47,25 +48,9 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.write(fs, "/path.txt", "path")
       {fs, :ok} = Backend.write(fs, "/path2.txt", "path2")
 
-      auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/path.txt" => %Virtfs.File{content: "path", path: "/path.txt"},
-             "/path2.txt" => %Virtfs.File{content: "path2", path: "/path2.txt"}
-           }
-         }, {:ok, {:ok, "path"}}} <- Backend.read(fs, "/path.txt")
-      )
+      auto_assert({:ok, "path"} <- Backend.read(fs, "/path.txt") |> Util.ok!())
 
-      auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/path.txt" => %Virtfs.File{content: "path", path: "/path.txt"},
-             "/path2.txt" => %Virtfs.File{content: "path2", path: "/path2.txt"}
-           }
-         }, {:ok, {:ok, "path2"}}} <- Backend.read(fs, "/path2.txt")
-      )
+      auto_assert({:ok, "path2"} <- Backend.read(fs, "/path2.txt") |> Util.ok!())
     end
 
     test "works - nested" do
@@ -75,43 +60,9 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.write(fs, "path.txt", "path")
       {fs, :ok} = Backend.write(fs, "path2.txt", "path2")
 
-      auto_assert(
-        {%Virtfs.FS{
-           cwd: "/first/second",
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/first" => %Virtfs.File{kind: :dir, path: "/first"},
-             "/first/second" => %Virtfs.File{kind: :dir, path: "/first/second"},
-             "/first/second/path.txt" => %Virtfs.File{
-               content: "path",
-               path: "/first/second/path.txt"
-             },
-             "/first/second/path2.txt" => %Virtfs.File{
-               content: "path2",
-               path: "/first/second/path2.txt"
-             }
-           }
-         }, {:ok, {:ok, "path"}}} <- Backend.read(fs, "path.txt")
-      )
+      auto_assert({:ok, "path"} <- Backend.read(fs, "path.txt") |> Util.ok!())
 
-      auto_assert(
-        {%Virtfs.FS{
-           cwd: "/first/second",
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/first" => %Virtfs.File{kind: :dir, path: "/first"},
-             "/first/second" => %Virtfs.File{kind: :dir, path: "/first/second"},
-             "/first/second/path.txt" => %Virtfs.File{
-               content: "path",
-               path: "/first/second/path.txt"
-             },
-             "/first/second/path2.txt" => %Virtfs.File{
-               content: "path2",
-               path: "/first/second/path2.txt"
-             }
-           }
-         }, {:ok, {:ok, "path"}}} <- Backend.read(fs, "/first/second/path.txt")
-      )
+      auto_assert({:ok, "path"} <- Backend.read(fs, "/first/second/path.txt") |> Util.ok!())
 
       auto_assert(
         {%Virtfs.FS{
@@ -156,29 +107,12 @@ defmodule Virtfs.BackendTest do
 
     test "does not work for folders" do
       fs = Virtfs.init()
-      {fs, :ok} = Backend.cd(fs, "first/second")
+      {fs, :ok} = Backend.cd(fs, "first/second3")
       {fs, :ok} = Backend.write(fs, "path.txt", "path")
       {fs, :ok} = Backend.write(fs, "path2.txt", "path2")
       {fs, :ok} = Backend.rm(fs, "/first")
 
-      auto_assert(
-        {%Virtfs.FS{
-           cwd: "/first/second",
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/first" => %Virtfs.File{kind: :dir, path: "/first"},
-             "/first/second" => %Virtfs.File{kind: :dir, path: "/first/second"},
-             "/first/second/path.txt" => %Virtfs.File{
-               content: "path",
-               path: "/first/second/path.txt"
-             },
-             "/first/second/path2.txt" => %Virtfs.File{
-               content: "path2",
-               path: "/first/second/path2.txt"
-             }
-           }
-         }, {:ok, ["/first/second"]}} <- Backend.ls(fs, "/first")
-      )
+      auto_assert({:ok, ["/first/second3"]} <- Backend.ls(fs, "/first") |> Util.ok!())
     end
   end
 
@@ -223,111 +157,20 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder3")
       {fs, :ok} = Backend.write(fs, "my/nested/folder/file.txt", "content")
 
+      auto_assert({:ok, ["/first/second/third/my/nested"]} <- Backend.ls(fs, "my") |> Util.ok!())
+
       auto_assert(
-        {%Virtfs.FS{
-           cwd: "/first/second/third",
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/first" => %Virtfs.File{kind: :dir, path: "/first"},
-             "/first/second" => %Virtfs.File{kind: :dir, path: "/first/second"},
-             "/first/second/third" => %Virtfs.File{kind: :dir, path: "/first/second/third"},
-             "/first/second/third/my" => %Virtfs.File{kind: :dir, path: "/first/second/third/my"},
-             "/first/second/third/my/nested" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested"
-             },
-             "/first/second/third/my/nested/folder" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder"
-             },
-             "/first/second/third/my/nested/folder/file.txt" => %Virtfs.File{
-               content: "content",
-               path: "/first/second/third/my/nested/folder/file.txt"
-             },
-             "/first/second/third/my/nested/folder2" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder2"
-             },
-             "/first/second/third/my/nested/folder3" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder3"
-             }
-           }
-         }, {:ok, ["/first/second/third/my/nested"]}} <- Backend.ls(fs, "my")
+        {:ok,
+         [
+           "/first/second/third/my/nested/folder",
+           "/first/second/third/my/nested/folder2",
+           "/first/second/third/my/nested/folder3"
+         ]} <- Backend.ls(fs, "my/nested") |> Util.ok!()
       )
 
       auto_assert(
-        {%Virtfs.FS{
-           cwd: "/first/second/third",
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/first" => %Virtfs.File{kind: :dir, path: "/first"},
-             "/first/second" => %Virtfs.File{kind: :dir, path: "/first/second"},
-             "/first/second/third" => %Virtfs.File{kind: :dir, path: "/first/second/third"},
-             "/first/second/third/my" => %Virtfs.File{kind: :dir, path: "/first/second/third/my"},
-             "/first/second/third/my/nested" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested"
-             },
-             "/first/second/third/my/nested/folder" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder"
-             },
-             "/first/second/third/my/nested/folder/file.txt" => %Virtfs.File{
-               content: "content",
-               path: "/first/second/third/my/nested/folder/file.txt"
-             },
-             "/first/second/third/my/nested/folder2" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder2"
-             },
-             "/first/second/third/my/nested/folder3" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder3"
-             }
-           }
-         },
-         {:ok,
-          [
-            "/first/second/third/my/nested/folder",
-            "/first/second/third/my/nested/folder2",
-            "/first/second/third/my/nested/folder3"
-          ]}} <- Backend.ls(fs, "my/nested")
-      )
-
-      auto_assert(
-        {%Virtfs.FS{
-           cwd: "/first/second/third",
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/first" => %Virtfs.File{kind: :dir, path: "/first"},
-             "/first/second" => %Virtfs.File{kind: :dir, path: "/first/second"},
-             "/first/second/third" => %Virtfs.File{kind: :dir, path: "/first/second/third"},
-             "/first/second/third/my" => %Virtfs.File{kind: :dir, path: "/first/second/third/my"},
-             "/first/second/third/my/nested" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested"
-             },
-             "/first/second/third/my/nested/folder" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder"
-             },
-             "/first/second/third/my/nested/folder/file.txt" => %Virtfs.File{
-               content: "content",
-               path: "/first/second/third/my/nested/folder/file.txt"
-             },
-             "/first/second/third/my/nested/folder2" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder2"
-             },
-             "/first/second/third/my/nested/folder3" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder3"
-             }
-           }
-         },
-         {:ok, ["/first/second/third/my/nested/folder/file.txt"]}} <-
-          Backend.ls(fs, "my/nested/folder")
+        {:ok, ["/first/second/third/my/nested/folder/file.txt"]} <-
+          Backend.ls(fs, "my/nested/folder") |> Util.ok!()
       )
     end
 
@@ -336,15 +179,7 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.write(fs, "file1.txt", "content")
       {fs, :ok} = Backend.write(fs, "file2.txt", "content")
 
-      auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/file1.txt" => %Virtfs.File{content: "content", path: "/file1.txt"},
-             "/file2.txt" => %Virtfs.File{content: "content", path: "/file2.txt"}
-           }
-         }, {:ok, ["/file1.txt", "/file2.txt"]}} <- Backend.ls(fs, "/")
-      )
+      auto_assert({:ok, ["/file1.txt", "/file2.txt"]} <- Backend.ls(fs, "/") |> Util.ok!())
     end
   end
 
@@ -358,87 +193,27 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.write(fs, "my/nested/folder/file.txt", "content")
 
       auto_assert(
-        {%Virtfs.FS{
-           cwd: "/first/second/third",
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/first" => %Virtfs.File{kind: :dir, path: "/first"},
-             "/first/second" => %Virtfs.File{kind: :dir, path: "/first/second"},
-             "/first/second/third" => %Virtfs.File{kind: :dir, path: "/first/second/third"},
-             "/first/second/third/my" => %Virtfs.File{kind: :dir, path: "/first/second/third/my"},
-             "/first/second/third/my/nested" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested"
-             },
-             "/first/second/third/my/nested/folder" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder"
-             },
-             "/first/second/third/my/nested/folder/file.txt" => %Virtfs.File{
-               content: "content",
-               path: "/first/second/third/my/nested/folder/file.txt"
-             },
-             "/first/second/third/my/nested/folder2" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder2"
-             },
-             "/first/second/third/my/nested/folder3" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder3"
-             }
-           }
-         },
-         {:ok,
-          [
-            "/first/second",
-            "/first/second/third",
-            "/first/second/third/my",
-            "/first/second/third/my/nested",
-            "/first/second/third/my/nested/folder",
-            "/first/second/third/my/nested/folder/file.txt",
-            "/first/second/third/my/nested/folder2",
-            "/first/second/third/my/nested/folder3"
-          ]}} <- Backend.tree(fs, "/first")
+        {:ok,
+         [
+           "/first/second",
+           "/first/second/third",
+           "/first/second/third/my",
+           "/first/second/third/my/nested",
+           "/first/second/third/my/nested/folder",
+           "/first/second/third/my/nested/folder/file.txt",
+           "/first/second/third/my/nested/folder2",
+           "/first/second/third/my/nested/folder3"
+         ]} <- Backend.tree(fs, "/first") |> Util.ok!()
       )
 
       auto_assert(
-        {%Virtfs.FS{
-           cwd: "/first/second/third",
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/first" => %Virtfs.File{kind: :dir, path: "/first"},
-             "/first/second" => %Virtfs.File{kind: :dir, path: "/first/second"},
-             "/first/second/third" => %Virtfs.File{kind: :dir, path: "/first/second/third"},
-             "/first/second/third/my" => %Virtfs.File{kind: :dir, path: "/first/second/third/my"},
-             "/first/second/third/my/nested" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested"
-             },
-             "/first/second/third/my/nested/folder" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder"
-             },
-             "/first/second/third/my/nested/folder/file.txt" => %Virtfs.File{
-               content: "content",
-               path: "/first/second/third/my/nested/folder/file.txt"
-             },
-             "/first/second/third/my/nested/folder2" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder2"
-             },
-             "/first/second/third/my/nested/folder3" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder3"
-             }
-           }
-         },
-         {:ok,
-          [
-            "/first/second/third/my/nested/folder",
-            "/first/second/third/my/nested/folder/file.txt",
-            "/first/second/third/my/nested/folder2",
-            "/first/second/third/my/nested/folder3"
-          ]}} <- Backend.tree(fs, "my/nested")
+        {:ok,
+         [
+           "/first/second/third/my/nested/folder",
+           "/first/second/third/my/nested/folder/file.txt",
+           "/first/second/third/my/nested/folder2",
+           "/first/second/third/my/nested/folder3"
+         ]} <- Backend.tree(fs, "my/nested") |> Util.ok!()
       )
     end
 
@@ -450,34 +225,19 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.cp_r(fs, "folder", "folder2")
 
       auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/folder" => %Virtfs.File{kind: :dir, path: "/folder"},
-             "/folder/file1.txt" => %Virtfs.File{content: "content", path: "/folder/file1.txt"},
-             "/folder/file2.txt" => %Virtfs.File{content: "content", path: "/folder/file2.txt"},
-             "/folder/sub1" => %Virtfs.File{kind: :dir, path: "/folder/sub1"},
-             "/folder/sub1/sub2" => %Virtfs.File{kind: :dir, path: "/folder/sub1/sub2"},
-             "/folder2" => %Virtfs.File{kind: :dir, path: "/folder2"},
-             "/folder2/file1.txt" => %Virtfs.File{content: "content", path: "/folder2/file1.txt"},
-             "/folder2/file2.txt" => %Virtfs.File{content: "content", path: "/folder2/file2.txt"},
-             "/folder2/sub1" => %Virtfs.File{kind: :dir, path: "/folder2/sub1"},
-             "/folder2/sub1/sub2" => %Virtfs.File{kind: :dir, path: "/folder2/sub1/sub2"}
-           }
-         },
-         {:ok,
-          [
-            "/folder",
-            "/folder/file1.txt",
-            "/folder/file2.txt",
-            "/folder/sub1",
-            "/folder/sub1/sub2",
-            "/folder2",
-            "/folder2/file1.txt",
-            "/folder2/file2.txt",
-            "/folder2/sub1",
-            "/folder2/sub1/sub2"
-          ]}} <- Backend.tree(fs, "/")
+        {:ok,
+         [
+           "/folder",
+           "/folder/file1.txt",
+           "/folder/file2.txt",
+           "/folder/sub1",
+           "/folder/sub1/sub2",
+           "/folder2",
+           "/folder2/file1.txt",
+           "/folder2/file2.txt",
+           "/folder2/sub1",
+           "/folder2/sub1/sub2"
+         ]} <- Backend.tree(fs, "/") |> Util.ok!()
       )
     end
   end
@@ -565,71 +325,29 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.cd(fs, "/")
 
       auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/first" => %Virtfs.File{kind: :dir, path: "/first"},
-             "/first/second" => %Virtfs.File{kind: :dir, path: "/first/second"},
-             "/first/second/third" => %Virtfs.File{kind: :dir, path: "/first/second/third"},
-             "/first/second/third/file1.txt" => %Virtfs.File{
-               content: "content",
-               path: "/first/second/third/file1.txt"
-             },
-             "/first/second/third/my" => %Virtfs.File{kind: :dir, path: "/first/second/third/my"},
-             "/first/second/third/my/nested" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested"
-             },
-             "/first/second/third/my/nested/folder" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder"
-             }
-           }
-         },
-         {:ok,
-          [
-            "/first",
-            "/first/second",
-            "/first/second/third",
-            "/first/second/third/file1.txt",
-            "/first/second/third/my",
-            "/first/second/third/my/nested",
-            "/first/second/third/my/nested/folder"
-          ]}} <- Backend.tree(fs, "/")
+        {:ok,
+         [
+           "/first",
+           "/first/second",
+           "/first/second/third",
+           "/first/second/third/file1.txt",
+           "/first/second/third/my",
+           "/first/second/third/my/nested",
+           "/first/second/third/my/nested/folder"
+         ]} <- Backend.tree(fs, "/") |> Util.ok!()
       )
 
       {fs, :ok} = Backend.rename(fs, "/first/second/third/file1.txt", "/first/second/file1.txt")
 
       auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/first" => %Virtfs.File{kind: :dir, path: "/first"},
-             "/first/second" => %Virtfs.File{kind: :dir, path: "/first/second"},
-             "/first/second/file1.txt" => %Virtfs.File{
-               content: "content",
-               path: "/first/second/file1.txt"
-             },
-             "/first/second/third" => %Virtfs.File{kind: :dir, path: "/first/second/third"},
-             "/first/second/third/my" => %Virtfs.File{kind: :dir, path: "/first/second/third/my"},
-             "/first/second/third/my/nested" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested"
-             },
-             "/first/second/third/my/nested/folder" => %Virtfs.File{
-               kind: :dir,
-               path: "/first/second/third/my/nested/folder"
-             }
-           }
-         },
-         {:ok,
-          [
-            "/first/second/file1.txt",
-            "/first/second/third",
-            "/first/second/third/my",
-            "/first/second/third/my/nested",
-            "/first/second/third/my/nested/folder"
-          ]}} <- Backend.tree(fs, "/first/second")
+        {:ok,
+         [
+           "/first/second/file1.txt",
+           "/first/second/third",
+           "/first/second/third/my",
+           "/first/second/third/my/nested",
+           "/first/second/third/my/nested/folder"
+         ]} <- Backend.tree(fs, "/first/second") |> Util.ok!()
       )
     end
 
@@ -638,14 +356,7 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.write(fs, "file1.txt", "content")
       {fs, :ok} = Backend.rename(fs, "missing.txt", "file1.txt")
 
-      auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/file1.txt" => %Virtfs.File{content: "content", path: "/file1.txt"}
-           }
-         }, {:ok, ["/file1.txt"]}} <- Backend.tree(fs, "/")
-      )
+      auto_assert({:ok, ["/file1.txt"]} <- Backend.tree(fs, "/") |> Util.ok!())
     end
   end
 
@@ -655,25 +366,9 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.write(fs, "file1.txt", "content")
       {fs, :ok} = Backend.cp(fs, "file1.txt", "file2.txt")
 
-      auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/file1.txt" => %Virtfs.File{content: "content", path: "/file1.txt"},
-             "/file2.txt" => %Virtfs.File{content: "content", path: "/file2.txt"}
-           }
-         }, {:ok, ["/file1.txt", "/file2.txt"]}} <- Backend.ls(fs, "/")
-      )
+      auto_assert({:ok, ["/file1.txt", "/file2.txt"]} <- Backend.ls(fs, "/") |> Util.ok!())
 
-      auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/file1.txt" => %Virtfs.File{content: "content", path: "/file1.txt"},
-             "/file2.txt" => %Virtfs.File{content: "content", path: "/file2.txt"}
-           }
-         }, {:ok, {:ok, "content"}}} <- Backend.read(fs, "file2.txt")
-      )
+      auto_assert({:ok, "content"} <- Backend.read(fs, "file2.txt") |> Util.ok!())
     end
 
     test "does not work for folders" do
@@ -681,25 +376,8 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.write(fs, "folder/file1.txt", "content")
       {fs, :ok} = Backend.cp(fs, "folder", "folder2")
 
-      auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/folder" => %Virtfs.File{kind: :dir, path: "/folder"},
-             "/folder/file1.txt" => %Virtfs.File{content: "content", path: "/folder/file1.txt"}
-           }
-         }, {:ok, ["/folder"]}} <- Backend.ls(fs, "/")
-      )
-
-      auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/folder" => %Virtfs.File{kind: :dir, path: "/folder"},
-             "/folder/file1.txt" => %Virtfs.File{content: "content", path: "/folder/file1.txt"}
-           }
-         }, {:error, :not_found}} <- Backend.ls(fs, "/folder2")
-      )
+      auto_assert({:ok, ["/folder"]} <- Backend.ls(fs, "/") |> Util.ok!())
+      auto_assert({:error, :not_found} <- Backend.ls(fs, "/folder2") |> Util.error!())
     end
   end
 
@@ -709,25 +387,9 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.write(fs, "file1.txt", "content")
       {fs, :ok} = Backend.cp_r(fs, "file1.txt", "file2.txt")
 
-      auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/file1.txt" => %Virtfs.File{content: "content", path: "/file1.txt"},
-             "/file2.txt" => %Virtfs.File{content: "content", path: "/file2.txt"}
-           }
-         }, {:ok, ["/file1.txt", "/file2.txt"]}} <- Backend.ls(fs, "/")
-      )
+      auto_assert({:ok, ["/file1.txt", "/file2.txt"]} <- Backend.ls(fs, "/") |> Util.ok!())
 
-      auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/file1.txt" => %Virtfs.File{content: "content", path: "/file1.txt"},
-             "/file2.txt" => %Virtfs.File{content: "content", path: "/file2.txt"}
-           }
-         }, {:ok, {:ok, "content"}}} <- Backend.read(fs, "file2.txt")
-      )
+      auto_assert({:ok, "content"} <- Backend.read(fs, "file2.txt") |> Util.ok!())
     end
 
     test "works for folders" do
@@ -738,75 +400,29 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.cp_r(fs, "folder", "folder2")
 
       auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/folder" => %Virtfs.File{kind: :dir, path: "/folder"},
-             "/folder/file1.txt" => %Virtfs.File{content: "content", path: "/folder/file1.txt"},
-             "/folder/file2.txt" => %Virtfs.File{content: "content", path: "/folder/file2.txt"},
-             "/folder/sub1" => %Virtfs.File{kind: :dir, path: "/folder/sub1"},
-             "/folder/sub1/sub2" => %Virtfs.File{kind: :dir, path: "/folder/sub1/sub2"},
-             "/folder2" => %Virtfs.File{kind: :dir, path: "/folder2"},
-             "/folder2/file1.txt" => %Virtfs.File{content: "content", path: "/folder2/file1.txt"},
-             "/folder2/file2.txt" => %Virtfs.File{content: "content", path: "/folder2/file2.txt"},
-             "/folder2/sub1" => %Virtfs.File{kind: :dir, path: "/folder2/sub1"},
-             "/folder2/sub1/sub2" => %Virtfs.File{kind: :dir, path: "/folder2/sub1/sub2"}
-           }
-         },
-         {:ok,
-          [
-            "/folder",
-            "/folder/file1.txt",
-            "/folder/file2.txt",
-            "/folder/sub1",
-            "/folder/sub1/sub2",
-            "/folder2",
-            "/folder2/file1.txt",
-            "/folder2/file2.txt",
-            "/folder2/sub1",
-            "/folder2/sub1/sub2"
-          ]}} <- Backend.tree(fs, "/")
+        {:ok,
+         [
+           "/folder",
+           "/folder/file1.txt",
+           "/folder/file2.txt",
+           "/folder/sub1",
+           "/folder/sub1/sub2",
+           "/folder2",
+           "/folder2/file1.txt",
+           "/folder2/file2.txt",
+           "/folder2/sub1",
+           "/folder2/sub1/sub2"
+         ]} <- Backend.tree(fs, "/") |> Util.ok!()
       )
 
       auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/folder" => %Virtfs.File{kind: :dir, path: "/folder"},
-             "/folder/file1.txt" => %Virtfs.File{content: "content", path: "/folder/file1.txt"},
-             "/folder/file2.txt" => %Virtfs.File{content: "content", path: "/folder/file2.txt"},
-             "/folder/sub1" => %Virtfs.File{kind: :dir, path: "/folder/sub1"},
-             "/folder/sub1/sub2" => %Virtfs.File{kind: :dir, path: "/folder/sub1/sub2"},
-             "/folder2" => %Virtfs.File{kind: :dir, path: "/folder2"},
-             "/folder2/file1.txt" => %Virtfs.File{content: "content", path: "/folder2/file1.txt"},
-             "/folder2/file2.txt" => %Virtfs.File{content: "content", path: "/folder2/file2.txt"},
-             "/folder2/sub1" => %Virtfs.File{kind: :dir, path: "/folder2/sub1"},
-             "/folder2/sub1/sub2" => %Virtfs.File{kind: :dir, path: "/folder2/sub1/sub2"}
-           }
-         },
-         {:ok,
-          ["/folder2/file1.txt", "/folder2/file2.txt", "/folder2/sub1", "/folder2/sub1/sub2"]}} <-
-          Backend.tree(fs, "/folder2")
+        {:ok, ["/folder2/file1.txt", "/folder2/file2.txt", "/folder2/sub1", "/folder2/sub1/sub2"]} <-
+          Backend.tree(fs, "/folder2") |> Util.ok!()
       )
 
       auto_assert(
-        {%Virtfs.FS{
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/folder" => %Virtfs.File{kind: :dir, path: "/folder"},
-             "/folder/file1.txt" => %Virtfs.File{content: "content", path: "/folder/file1.txt"},
-             "/folder/file2.txt" => %Virtfs.File{content: "content", path: "/folder/file2.txt"},
-             "/folder/sub1" => %Virtfs.File{kind: :dir, path: "/folder/sub1"},
-             "/folder/sub1/sub2" => %Virtfs.File{kind: :dir, path: "/folder/sub1/sub2"},
-             "/folder2" => %Virtfs.File{kind: :dir, path: "/folder2"},
-             "/folder2/file1.txt" => %Virtfs.File{content: "content", path: "/folder2/file1.txt"},
-             "/folder2/file2.txt" => %Virtfs.File{content: "content", path: "/folder2/file2.txt"},
-             "/folder2/sub1" => %Virtfs.File{kind: :dir, path: "/folder2/sub1"},
-             "/folder2/sub1/sub2" => %Virtfs.File{kind: :dir, path: "/folder2/sub1/sub2"}
-           }
-         },
-         {:ok, ["/folder/file1.txt", "/folder/file2.txt", "/folder/sub1", "/folder/sub1/sub2"]}} <-
-          Backend.tree(fs, "/folder")
+        {:ok, ["/folder/file1.txt", "/folder/file2.txt", "/folder/sub1", "/folder/sub1/sub2"]} <-
+          Backend.tree(fs, "/folder") |> Util.ok!()
       )
     end
   end
