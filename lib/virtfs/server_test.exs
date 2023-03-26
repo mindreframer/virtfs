@@ -67,6 +67,30 @@ defmodule Virtfs.ServerTest do
     end
   end
 
+  describe "cp_r!" do
+    test "works", %{fs: fs} do
+      auto_assert(:ok <- Server.mkdir_p!(fs, "/a/b/c"))
+      auto_assert(:ok <- Server.write(fs, "/a/b/file.txt", "my poem/nand more!"))
+      auto_assert(["/a/b/c", "/a/b/file.txt"] <- Server.ls!(fs, "/a/b"))
+      auto_assert(:ok <- Server.cp_r!(fs, "/a/b", "a/new"))
+
+      auto_assert(
+        ["/a", "/a/b", "/a/b/c", "/a/b/file.txt", "/a/new", "/a/new/c", "/a/new/file.txt"] <-
+          Server.tree!(fs, "/")
+      )
+
+      auto_assert({:ok, "my poem/nand more!"} <- Server.read(fs, "/a/new/file.txt"))
+    end
+
+    test "raises on invalid input", %{fs: fs} do
+      assert_raise RuntimeError,
+                   "{{:error, :source_not_found}, {:cp_r!, \"/a\", \"/b\"}}",
+                   fn ->
+                     auto_assert(:ok <- Server.cp_r!(fs, "/a", "/b"))
+                   end
+    end
+  end
+
   describe "mkdir_p!" do
     test "works on valid input", %{fs: fs} do
       auto_assert(:ok <- Server.mkdir_p!(fs, "/a/b/c"))
@@ -74,7 +98,7 @@ defmodule Virtfs.ServerTest do
       auto_assert(["/a/b", "/a/b/c", "/a/d", "/a/d/f"] <- Server.tree!(fs, "/a"))
     end
 
-    test "works on invalid input", %{fs: fs} do
+    test "works on invalid input", %{fs: _fs} do
       # TODO maybe cover input validation later
       # auto_assert(:ok <- Server.mkdir_p!(fs, ))
     end
