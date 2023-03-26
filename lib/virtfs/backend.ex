@@ -19,7 +19,8 @@ defmodule Virtfs.Backend do
     file = Map.get(fs.files, full_path)
 
     cond do
-      file == nil -> error(fs, @error_not_found)
+      file == nil -> error(fs, :not_found)
+      file.kind == :dir -> error(fs, :source_is_dir)
       true -> ok(fs, file.content)
     end
   end

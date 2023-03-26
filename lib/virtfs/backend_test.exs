@@ -59,18 +59,20 @@ defmodule Virtfs.BackendTest do
 
       auto_assert({:ok, "path"} <- Backend.read(fs, "/a/b/path.txt") |> Util.ok!())
 
-      auto_assert(
-        {%Virtfs.FS{
-           cwd: "/a/b",
-           files: %{
-             "/" => %Virtfs.File{kind: :dir, path: "/"},
-             "/a" => %Virtfs.File{kind: :dir, path: "/a"},
-             "/a/b" => %Virtfs.File{kind: :dir, path: "/a/b"},
-             "/a/b/path.txt" => %Virtfs.File{content: "path", path: "/a/b/path.txt"},
-             "/a/b/path2.txt" => %Virtfs.File{content: "path2", path: "/a/b/path2.txt"}
-           }
-         }, {:error, {:error, :not_found}}} <- Backend.read(fs, "/path.txt")
-      )
+      auto_assert({:error, :not_found} <- Backend.read(fs, "/path.txt") |> Util.error!())
+    end
+
+    test "returns error for non-existing files" do
+      fs = Virtfs.init()
+
+      auto_assert({:error, :not_found} <- Backend.read(fs, "does-not-exist.txt") |> Util.error!())
+    end
+
+    test "returns error for folders" do
+      fs = Virtfs.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b/c")
+
+      auto_assert({:error, :source_is_dir} <- Backend.read(fs, "a/b") |> Util.error!())
     end
   end
 
