@@ -1,6 +1,7 @@
 defmodule Virtfs.Backend.VirtualFS do
   alias Virtfs.File
   alias Virtfs.FS
+  @error_not_found {:error, :not_found}
   # @behaviour Virtfs.Behaviour
 
   def write(%FS{} = fs, path, content) do
@@ -19,7 +20,7 @@ defmodule Virtfs.Backend.VirtualFS do
     file = Map.get(fs.files, full_path)
 
     cond do
-      file == nil -> {:error, :not_found}
+      file == nil -> @error_not_found
       true -> {:ok, file.content}
     end
   end
@@ -52,7 +53,7 @@ defmodule Virtfs.Backend.VirtualFS do
         {:ok, found}
 
       true ->
-        {:error, :not_found}
+        @error_not_found
     end
   end
 
@@ -164,6 +165,7 @@ defmodule Virtfs.Backend.VirtualFS do
           fs.files
 
         file.kind == :dir ->
+          # TODO we need to rename also subfolders / subfiles!
           Map.delete(fs.files, full_src) |> Map.put(full_dest, Map.put(file, :path, full_dest))
 
         file.kind == :file ->
