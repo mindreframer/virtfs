@@ -6,7 +6,7 @@ defmodule GenTape do
   end
 
   def convert_line(line) do
-    cond do 
+    cond do
       String.starts_with?(line, "#") -> convert_comment(line)
       String.trim_leading(line) == "" -> ""
       true -> convert_code(line)
@@ -18,10 +18,10 @@ defmodule GenTape do
   end
 
   def convert_comment(line) do
-    ~s|Type '#{line}' Sleep 1 Enter Sleep 0.5|
+    ~s|Type@.5 '#{line}' Sleep 1 Enter Sleep 0.5|
   end
 
-  def file_path do 
+  def file_path do
     Path.join(__DIR__, "example.exs")
   end
 end

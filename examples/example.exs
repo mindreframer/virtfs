@@ -19,6 +19,7 @@
 ["/some", "/some/file.txt", "/some/file2.txt"] = Virtfs.tree!(fs, "/")
 
 # Dump in-memory FS into a folder
+# Make sure, our destination folder is empty
 File.rm_rf("/tmp/virtfs_test")
 Virtfs.dump(fs, "/tmp/virtfs_test")
 ["file2.txt", "file.txt"] = File.ls!("/tmp/virtfs_test/some")
