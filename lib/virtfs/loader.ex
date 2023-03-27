@@ -1,20 +1,27 @@
 defmodule Virtfs.Loader do
   alias Virtfs.Backend
 
-  def run(%Virtfs.FS{} = fs, dest) do
+  def run(%Virtfs.FS{} = fs, dest, _opts \\ []) do
+    # ignore = Keyword.get(opts, :ignore, [])
+
+    # ignore_regexes = Enum.map(ignore, fn(str)-> Regex.buil)
     files = Path.wildcard(dest <> "/**/**")
 
-    Enum.reduce(files, fs, fn path, fs ->
-      relpath = relative_path(dest, path)
-      type = ftype(path)
+    fs =
+      Enum.reduce(files, fs, fn path, fs ->
+        relpath = relative_path(dest, path)
+        type = ftype(path)
 
-      cond do
-        type == :dir -> Backend.mkdir_p(fs, relpath) |> elem(0)
-        type == :file -> Backend.write(fs, relpath, File.read!(path)) |> elem(0)
-        # we ignore symlinks for now
-        type == :symlink -> fs
-      end
-    end)
+        cond do
+          type == :dir -> Backend.mkdir_p(fs, relpath) |> elem(0)
+          type == :file -> Backend.write(fs, relpath, File.read!(path)) |> elem(0)
+          # we ignore symlinks for now
+          type == :symlink -> fs
+        end
+      end)
+
+    # TODO: handle errors ?
+    {:ok, fs}
   end
 
   def relative_path(dest, path) do

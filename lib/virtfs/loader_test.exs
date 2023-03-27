@@ -5,8 +5,8 @@ defmodule Virtfs.LoaderTest do
   describe "run" do
     test "works" do
       {:ok, fs} = Virtfs.start_link()
-      Virtfs.mkdir_p!(fs, "/a/b/c")
-      Virtfs.load(fs, fixture_path())
+      auto_assert(:ok <- Virtfs.mkdir_p!(fs, "/a/b/c"))
+      auto_assert(:ok <- Virtfs.load(fs, fixture_path()))
       data = Virtfs.get_fs(fs)
 
       auto_assert(

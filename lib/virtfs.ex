@@ -261,9 +261,9 @@ defmodule Virtfs do
 
   @impl true
   def handle_call({:load, path}, _from, %FS{} = fs) do
-    res = Virtfs.Loader.run(fs, path)
-    # set state to result from loader
-    {:reply, res, res}
+    with {:ok, res} <- Virtfs.Loader.run(fs, path) do
+      {:reply, :ok, res}
+    end
   end
 
   defp handle_error(res, args) do
