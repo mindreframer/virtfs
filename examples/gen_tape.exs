@@ -14,11 +14,11 @@ defmodule GenTape do
   end
 
   def convert_code(line) do
-    ~s|Type@.2 '#{line}' Sleep 1 Enter Sleep 0.5|
+    ~s|Type@.2 '#{line}' Sleep 0.5 Enter Sleep 0.3|
   end
 
   def convert_comment(line) do
-    ~s|Type@.5 '#{line}' Sleep 1 Enter Sleep 0.5|
+    ~s|Type@.3 '#{line}' Sleep 0.5 Enter Sleep 0.3|
   end
 
   def file_path do
