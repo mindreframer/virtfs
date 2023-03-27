@@ -12,8 +12,13 @@ defmodule Virtfs.DumperTest do
 
       # files = Path.wildcard(dir <> "**/**")
       # IO.inspect(files)
-      content = File.read!(Path.join(dir, "/a/b/c/d.txt"))
-      assert content == "content\nandmore"
+      auto_assert(
+        """
+        content
+        and more\
+        """ <- File.read!(Path.join(dir, "/a/b/c/d.txt"))
+      )
+
       File.rm_rf!(dir)
     end
   end
@@ -21,9 +26,9 @@ defmodule Virtfs.DumperTest do
   def prepare_fs_struct do
     {:ok, fs} = Virtfs.start_link()
     Virtfs.mkdir_p!(fs, "/a/b/c")
-    Virtfs.write!(fs, "/a/b/c/d.txt", "content\nandmore")
-    Virtfs.write!(fs, "/a/b/c/g.txt", "content\nandmore")
-    Virtfs.write!(fs, "/a/file1.txt", "content\nandmore")
+    Virtfs.write!(fs, "/a/b/c/d.txt", "content\nand more")
+    Virtfs.write!(fs, "/a/b/c/g.txt", "content\nand more")
+    Virtfs.write!(fs, "/a/file1.txt", "content\nand more")
     Virtfs.get_fs(fs)
   end
 end

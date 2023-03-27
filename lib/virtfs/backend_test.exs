@@ -39,7 +39,7 @@ defmodule Virtfs.BackendTest do
     test "to folders does not work" do
       fs = Virtfs.FS.init()
       {fs, :ok} = Backend.mkdir_p(fs, "a/b")
-      {_fs, {:error, :source_is_dir}} = Backend.write(fs, "a/b", "content")
+      assert {_fs, {:error, :source_is_dir}} = Backend.write(fs, "a/b", "content")
     end
   end
 
@@ -387,7 +387,6 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.cp(fs, "file1.txt", "file2.txt")
 
       auto_assert({:ok, ["/file1.txt", "/file2.txt"]} <- Backend.ls(fs, "/") |> Util.ok!())
-
       auto_assert({:ok, "content"} <- Backend.read(fs, "file2.txt") |> Util.ok!())
     end
 
@@ -419,7 +418,6 @@ defmodule Virtfs.BackendTest do
       {fs, :ok} = Backend.cp_r(fs, "file1.txt", "file2.txt")
 
       auto_assert({:ok, ["/file1.txt", "/file2.txt"]} <- Backend.ls(fs, "/") |> Util.ok!())
-
       auto_assert({:ok, "content"} <- Backend.read(fs, "file2.txt") |> Util.ok!())
     end
 
@@ -460,7 +458,7 @@ defmodule Virtfs.BackendTest do
     test "has errors for not-existing src files" do
       fs = Virtfs.FS.init()
       {fs, :ok} = Backend.mkdir_p(fs, "a/b/c")
-      {_, {:error, :source_not_found}} = Backend.cp_r(fs, "a/does-not-exist", "d/f")
+      assert {_, {:error, :source_not_found}} = Backend.cp_r(fs, "a/does-not-exist", "d/f")
     end
   end
 end
