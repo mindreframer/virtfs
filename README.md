@@ -1,4 +1,8 @@
-# Virtfs
+# Virtfs - In-memory file system for Elixir
+
+[![Hex.pm](https://img.shields.io/hexpm/v/virtfs.svg)](https://hex.pm/packages/virtfs)
+[![Docs](https://img.shields.io/badge/hexdocs-docs-8e7ce6.svg)](https://hexdocs.pm/virtfs)
+[![CI](https://github.com/mindreframer/virtfs/actions/workflows/ci.yml/badge.svg)](https://github.com/mindreframer/virtfs/actions/workflows/ci.yml)
 
 `Virtfs` is a virtual system, that provides an in-memory file-system. This is very helpful when testing complex file generation scenarios (like code generation). The API is very simple and leaky, because we assume that we deal with generation of small files.
 
