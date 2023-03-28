@@ -11,6 +11,8 @@ defmodule Virtfs.Dumper do
 
   def create_file(dest, %Virtfs.File{kind: :file, content: content, path: path}) do
     full_path = full_path(dest, path)
+    dir_path = Path.dirname(full_path)
+    File.mkdir_p!(dir_path)
     File.write!(full_path, content)
   end
 
