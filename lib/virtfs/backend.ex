@@ -306,6 +306,12 @@ defmodule Virtfs.Backend do
     ok(fs, full_path)
   end
 
+  def relative_to_cwd(fs, path) do
+    full_path = to_fullpath(fs.cwd, path)
+    res = Path.relative_to(full_path, fs.cwd)
+    ok(fs, res)
+  end
+
   ###
   ### HELPERS
   ###

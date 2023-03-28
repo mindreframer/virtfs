@@ -157,6 +157,18 @@ defmodule VirtfsTest do
     end
   end
 
+  describe "relative_to_cwd" do
+    test "works", %{fs: fs} do
+      auto_assert(:ok <- Virtfs.mkdir_p!(fs, "/a/b/c"))
+      auto_assert(:ok <- Virtfs.mkdir_p!(fs, "/a/b/d"))
+      auto_assert(:ok <- Virtfs.cd(fs, "/a/b"))
+
+      auto_assert(
+        {:ok, "some/random/path"} <- Virtfs.relative_to_cwd(fs, "/a/b/some/random/path")
+      )
+    end
+  end
+
   defp new_fs(_) do
     {:ok, fs} = Virtfs.start_link()
     {:ok, %{fs: fs}}

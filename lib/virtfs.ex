@@ -148,6 +148,14 @@ defmodule Virtfs do
     handle_error(expand(pid, path), {:expand!, path})
   end
 
+  def relative_to_cwd(pid, path) do
+    GenServer.call(pid, {:relative_to_cwd, path})
+  end
+
+  def relative_to_cwd!(pid, path) do
+    handle_error(relative_to_cwd(pid, path), {:relative_to_cwd!, path})
+  end
+
   ## Management API
   def get_fs(pid) do
     GenServer.call(pid, {:get_fs})
@@ -269,6 +277,12 @@ defmodule Virtfs do
   @impl true
   def handle_call({:expand, path}, _from, %FS{} = fs) do
     {fs, res} = Backend.expand(fs, path)
+    {:reply, res, fs}
+  end
+
+  @impl true
+  def handle_call({:relative_to_cwd, path}, _from, %FS{} = fs) do
+    {fs, res} = Backend.relative_to_cwd(fs, path)
     {:reply, res, fs}
   end
 
