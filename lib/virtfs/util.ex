@@ -25,6 +25,8 @@ defmodule Virtfs.Util do
   end
 
   def normalize_path(path) do
-    String.replace(path, "//", "/")
+    path
+    |> String.replace("//", "/")
+    |> String.replace_trailing("/", "")
   end
 end
