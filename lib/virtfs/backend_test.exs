@@ -21,6 +21,7 @@ defmodule Virtfs.BackendTest do
 
     test "cwd is considered" do
       fs = Virtfs.FS.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b")
       {fs, :ok} = Backend.cd(fs, "a/b")
       {fs, :ok} = Backend.write(fs, "path.txt", "path")
       {fs, :ok} = Backend.write(fs, "path2.txt", "path2")
@@ -81,6 +82,7 @@ defmodule Virtfs.BackendTest do
     test "works - nested" do
       fs = Virtfs.FS.init()
 
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b")
       {fs, :ok} = Backend.cd(fs, "a/b")
       {fs, :ok} = Backend.write(fs, "path.txt", "path")
       {fs, :ok} = Backend.write(fs, "path2.txt", "path2")
@@ -109,6 +111,7 @@ defmodule Virtfs.BackendTest do
   describe "rm" do
     test "works only for files" do
       fs = Virtfs.FS.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b")
       {fs, :ok} = Backend.cd(fs, "a/b")
       {fs, :ok} = Backend.write(fs, "path.txt", "path")
       {fs, :ok} = Backend.write(fs, "path2.txt", "path2")
@@ -126,6 +129,7 @@ defmodule Virtfs.BackendTest do
 
     test "does not work for folders" do
       fs = Virtfs.FS.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b")
       {fs, :ok} = Backend.cd(fs, "a/b")
       {fs, :ok} = Backend.write(fs, "path.txt", "path")
       {fs, :ok} = Backend.write(fs, "path2.txt", "path2")
@@ -146,6 +150,7 @@ defmodule Virtfs.BackendTest do
   describe "cd" do
     test ".. works" do
       fs = Virtfs.FS.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b")
       {fs, :ok} = Backend.cd(fs, "a/b")
       auto_assert("/a/b" <- fs.cwd)
 
@@ -161,11 +166,13 @@ defmodule Virtfs.BackendTest do
 
     test ".. with mixed instructions works" do
       fs = Virtfs.FS.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b/c")
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b/d")
       {fs, :ok} = Backend.cd(fs, "/a/b/c")
       auto_assert("/a/b/c" <- fs.cwd)
 
-      {fs, :ok} = Backend.cd(fs, "../fourth")
-      auto_assert("/a/b/fourth" <- fs.cwd)
+      {fs, :ok} = Backend.cd(fs, "../d")
+      auto_assert("/a/b/d" <- fs.cwd)
 
       {fs, :ok} = Backend.cd(fs, "..")
       auto_assert("/a/b" <- fs.cwd)
@@ -178,6 +185,7 @@ defmodule Virtfs.BackendTest do
   describe "ls" do
     test "works for the current folder" do
       fs = Virtfs.FS.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b/c")
       {fs, :ok} = Backend.cd(fs, "/a/b/c")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder2")
@@ -209,6 +217,7 @@ defmodule Virtfs.BackendTest do
   describe "tree" do
     test "returns recursivelly files below given path" do
       fs = Virtfs.FS.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b/c")
       {fs, :ok} = Backend.cd(fs, "/a/b/c")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder2")
@@ -256,6 +265,7 @@ defmodule Virtfs.BackendTest do
   describe "mkdir_p" do
     test "creates full hierarchy of folders" do
       fs = Virtfs.FS.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b/c")
       {fs, :ok} = Backend.cd(fs, "/a/b/c")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder")
 
@@ -274,6 +284,7 @@ defmodule Virtfs.BackendTest do
 
     test "does not duplicate folders" do
       fs = Virtfs.FS.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a")
       {fs, :ok} = Backend.cd(fs, "/a/")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder")
@@ -295,6 +306,7 @@ defmodule Virtfs.BackendTest do
   describe "rm_rf" do
     test "removes a folder with full content (and subfolders)" do
       fs = Virtfs.FS.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a")
       {fs, :ok} = Backend.cd(fs, "/a")
       {fs, :ok} = Backend.mkdir_p(fs, "nested/folder")
       {fs, :ok} = Backend.write(fs, "nested/folder/file.txt1", "content")
@@ -332,22 +344,15 @@ defmodule Virtfs.BackendTest do
   describe "rename" do
     test "works with existing files" do
       fs = Virtfs.FS.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b/c")
       {fs, :ok} = Backend.cd(fs, "/a/b/c")
       {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder")
       {fs, :ok} = Backend.write(fs, "file1.txt", "content")
       {fs, :ok} = Backend.cd(fs, "/")
 
       auto_assert(
-        {:ok,
-         [
-           "/a",
-           "/a/b",
-           "/a/b/c",
-           "/a/b/c/file1.txt",
-           "/a/b/c/my",
-           "/a/b/c/my/nested",
-           "/a/b/c/my/nested/folder"
-         ]} <- Backend.tree(fs, "/") |> Util.ok!()
+        {:ok, ["/a/b/c/file1.txt", "/a/b/c/my", "/a/b/c/my/nested", "/a/b/c/my/nested/folder"]} <-
+          Backend.tree(fs, "/") |> Util.ok!()
       )
 
       {fs, :ok} = Backend.rename(fs, "/a/b/c/file1.txt", "/a/b/file1.txt")

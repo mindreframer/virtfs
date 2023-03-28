@@ -271,7 +271,13 @@ defmodule Virtfs.Backend do
   ## Nav
   def cd(fs, path) do
     full_path = to_fullpath(fs.cwd, path)
-    ok(update_fs(fs, :cwd, full_path))
+    file = Map.get(fs.files, full_path)
+
+    cond do
+      file == nil -> error(fs, :not_found)
+      file.kind == :file -> error(fs, :not_dir)
+      true -> ok(update_fs(fs, :cwd, full_path))
+    end
   end
 
   def exists?(fs, path) do
