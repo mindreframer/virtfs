@@ -1,3 +1,7 @@
+## v0.1.3 (2023-03-28)
+
+- Feat: add generator from Mix with adjustments for Virtfs
+
 ## v0.1.2 (2023-03-28)
 
 - Feat: add `expand` command

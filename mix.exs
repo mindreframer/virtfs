@@ -1,7 +1,7 @@
 defmodule Virtfs.MixProject do
   use Mix.Project
   @github_url "https://github.com/mindreframer/virtfs"
-  @version "0.1.2"
+  @version "0.1.3"
   @description "Virtfs allows mock-FS operations, that can be applied on a real FS folder"
 
   def project do
@@ -32,7 +32,7 @@ defmodule Virtfs.MixProject do
       files: ~w(lib mix.exs README* CHANGELOG*),
       licenses: ["MIT"],
       links: %{
-        "GitHub" => @github_url,
+        "Github" => @github_url,
         "CHANGELOG" => "https://github.com/mindreframer/virtfs/blob/main/CHANGELOG.md"
       }
     ]
