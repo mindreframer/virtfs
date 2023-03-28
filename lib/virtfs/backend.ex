@@ -300,6 +300,12 @@ defmodule Virtfs.Backend do
     ok(fs, res)
   end
 
+  ## Path
+  def expand(fs, path) do
+    full_path = to_fullpath(fs.cwd, path)
+    ok(fs, full_path)
+  end
+
   ###
   ### HELPERS
   ###

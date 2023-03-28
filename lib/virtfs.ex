@@ -139,6 +139,15 @@ defmodule Virtfs do
     GenServer.call(pid, {:cwd})
   end
 
+  ## Path API partially included
+  def expand(pid, path) do
+    GenServer.call(pid, {:expand, path})
+  end
+
+  def expand!(pid, path) do
+    handle_error(expand(pid, path), {:expand!, path})
+  end
+
   ## Management API
   def get_fs(pid) do
     GenServer.call(pid, {:get_fs})
@@ -254,6 +263,13 @@ defmodule Virtfs do
   @impl true
   def handle_call({:cwd}, _from, %FS{} = fs) do
     {:reply, fs.cwd, fs}
+  end
+
+  ## Path API callbacks
+  @impl true
+  def handle_call({:expand, path}, _from, %FS{} = fs) do
+    {fs, res} = Backend.expand(fs, path)
+    {:reply, res, fs}
   end
 
   ## Management API callbacks

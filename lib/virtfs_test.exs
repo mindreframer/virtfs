@@ -147,6 +147,16 @@ defmodule VirtfsTest do
     end
   end
 
+  describe "expand" do
+    test "works", %{fs: fs} do
+      auto_assert(:ok <- Virtfs.mkdir_p!(fs, "/a/b/c"))
+      auto_assert(:ok <- Virtfs.mkdir_p!(fs, "/a/b/d"))
+      auto_assert(:ok <- Virtfs.cd(fs, "/a/b"))
+      auto_assert("/a/b/some/random/path" <- Virtfs.expand!(fs, "some/random/path"))
+      auto_assert("/a/d/another/folder" <- Virtfs.expand!(fs, "../d/another/folder"))
+    end
+  end
+
   defp new_fs(_) do
     {:ok, fs} = Virtfs.start_link()
     {:ok, %{fs: fs}}
