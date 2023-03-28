@@ -135,6 +135,10 @@ defmodule Virtfs do
     handle_error(dir?(pid, path), {:dir!, path})
   end
 
+  def cwd(pid) do
+    GenServer.call(pid, {:cwd})
+  end
+
   ## Management API
   def get_fs(pid) do
     GenServer.call(pid, {:get_fs})
@@ -245,6 +249,11 @@ defmodule Virtfs do
   def handle_call({:dir?, path}, _from, %FS{} = fs) do
     {fs, res} = Backend.dir?(fs, path)
     {:reply, res, fs}
+  end
+
+  @impl true
+  def handle_call({:cwd}, _from, %FS{} = fs) do
+    {:reply, fs.cwd, fs}
   end
 
   ## Management API callbacks

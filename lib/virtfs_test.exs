@@ -133,6 +133,20 @@ defmodule VirtfsTest do
     end
   end
 
+  describe "cwd" do
+    test "returns current workind dir", %{fs: fs} do
+      auto_assert(:ok <- Virtfs.mkdir_p!(fs, "/a/b/c"))
+      auto_assert(:ok <- Virtfs.mkdir_p!(fs, "/a/d/f"))
+      auto_assert("/" <- Virtfs.cwd(fs))
+
+      auto_assert(:ok <- Virtfs.cd(fs, "/a/b"))
+      auto_assert("/a/b" <- Virtfs.cwd(fs))
+
+      auto_assert({:error, :not_found} <- Virtfs.cd(fs, "/a/b/d/e/g/f/h"))
+      auto_assert("/a/b" <- Virtfs.cwd(fs))
+    end
+  end
+
   defp new_fs(_) do
     {:ok, fs} = Virtfs.start_link()
     {:ok, %{fs: fs}}
