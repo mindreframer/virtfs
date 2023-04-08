@@ -165,8 +165,8 @@ defmodule Virtfs do
     GenServer.call(pid, {:dump, path})
   end
 
-  def load(pid, path) do
-    GenServer.call(pid, {:load, path})
+  def load(pid, path, opts \\ []) do
+    GenServer.call(pid, {:load, path, opts})
   end
 
   ###
@@ -299,8 +299,8 @@ defmodule Virtfs do
   end
 
   @impl true
-  def handle_call({:load, path}, _from, %FS{} = fs) do
-    with {:ok, res} <- Virtfs.Loader.run(fs, path) do
+  def handle_call({:load, path, opts}, _from, %FS{} = fs) do
+    with {:ok, res} <- Virtfs.Loader.run(fs, path, opts) do
       {:reply, :ok, res}
     end
   end

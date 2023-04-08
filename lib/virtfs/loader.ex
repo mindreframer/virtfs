@@ -1,15 +1,30 @@
 defmodule Virtfs.Loader do
   alias Virtfs.Backend
 
-  def run(%Virtfs.FS{} = fs, dest, _opts \\ []) do
-    # ignore = Keyword.get(opts, :ignore, [])
+  @doc """
 
-    # ignore_regexes = Enum.map(ignore, fn(str)-> Regex.buil)
-    files = Path.wildcard(dest <> "/**/**")
+  Whitelist options for a typical Elixir project:
+
+    ```elixir
+    whitelist = [
+      "{.formatter.exs,.gitignore,.iex.exs,CHANGELOG.md,README.md,TODO.txt,mix.exs,mix.lock}",
+      "{.github}/**",
+      "{lib,test}/**"
+    ]
+    ```
+  """
+  def run(%Virtfs.FS{} = fs, src, opts \\ []) do
+    # by default we load ALL files!
+    whitelist = Keyword.get(opts, :whitelist, ["**/**"])
+
+    files =
+      whitelist
+      |> Enum.map(fn glob -> "#{src}/#{glob}" end)
+      |> Enum.flat_map(fn x -> Path.wildcard(x, match_dot: true) end)
 
     fs =
       Enum.reduce(files, fs, fn path, fs ->
-        relpath = relative_path(dest, path)
+        relpath = relative_path(src, path)
         type = ftype(path)
 
         cond do
