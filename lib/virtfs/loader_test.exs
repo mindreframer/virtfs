@@ -44,45 +44,25 @@ defmodule Virtfs.LoaderTest do
 
     test "supports whitelisting" do
       {:ok, fs} = Virtfs.start_link()
-      auto_assert(:ok <- Virtfs.mkdir_p!(fs, "/a/b/c"))
+
+      # load 1-level /a
+      Virtfs.mkdir_p!(fs, "/a/b/c")
       Virtfs.load(fs, fixture_path(), whitelist: ["{a}/*"])
-      data = Virtfs.get_fs(fs)
+      auto_assert(["/a", "/a/b", "/a/b/c"] <- Virtfs.tree!(fs, "/"))
 
-      auto_assert(
-        %Virtfs.FS{
-          files: %{
-            "/" => %Virtfs.File{kind: :dir, path: "/"},
-            "/a" => %Virtfs.File{kind: :dir, path: "/a"},
-            "/a/b" => %Virtfs.File{kind: :dir, path: "/a/b"},
-            "/a/b/c" => %Virtfs.File{kind: :dir, path: "/a/b/c"}
-          }
-        } <- data
-      )
-
+      # load deep a/
+      Virtfs.rm_rf!(fs, "/")
+      Virtfs.mkdir_p!(fs, "/a/b/c")
       Virtfs.load(fs, fixture_path(), whitelist: ["{a}/**"])
+      auto_assert(["/a", "/a/b", "/a/b/c", "/a/b/file1.txt"] <- Virtfs.tree!(fs, "/"))
 
-      auto_assert(["/a"] <- Virtfs.ls!(fs, "/"))
-
-      data = Virtfs.get_fs(fs)
+      # load all
+      Virtfs.rm_rf!(fs, "/")
+      Virtfs.mkdir_p!(fs, "/a/b/c")
+      Virtfs.load(fs, fixture_path())
 
       auto_assert(
-        %{
-          "/" => %Virtfs.File{kind: :dir, path: "/"},
-          "/a" => %Virtfs.File{kind: :dir, path: "/a"},
-          "/a/b" => %Virtfs.File{kind: :dir, path: "/a/b"},
-          "/a/b/c" => %Virtfs.File{kind: :dir, path: "/a/b/c"},
-          "/a/b/file1.txt" => %Virtfs.File{
-            content: """
-            here some dummy
-            content
-
-
-            with spaces and newlines.
-
-            """,
-            path: "/a/b/file1.txt"
-          }
-        } <- data.files
+        ["/a", "/a/b", "/a/b/c", "/a/b/file1.txt", "/x", "/x/file2.txt"] <- Virtfs.tree!(fs, "/")
       )
     end
   end
