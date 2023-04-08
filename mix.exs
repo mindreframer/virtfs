@@ -42,6 +42,7 @@ defmodule Virtfs.MixProject do
   defp deps do
     [
       {:typed_struct, "~> 0.3.0"},
+      {:glob_ex, "~> 0.1"},
       {:ex_doc, "~> 0.29", only: :dev, runtime: false},
       {:mneme, "~> 0.2.7", only: [:test]},
       {:test_iex, github: "mindreframer/test_iex", only: [:test]}
