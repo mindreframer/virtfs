@@ -1,7 +1,9 @@
 %{
   "earmark_parser": {:hex, :earmark_parser, "1.4.31", "a93921cdc6b9b869f519213d5bc79d9e218ba768d7270d46fdcf1c01bacff9e2", [:mix], [], "hexpm", "317d367ee0335ef037a87e46c91a2269fef6306413f731e8ec11fc45a7efd059"},
   "erlmemfs": {:hex, :erlmemfs, "0.1.0", "47190ba63e955bea934f18a9b801e54c1e5434abd5b2e977ea35ebb0aa04c46e", [:rebar3], [], "hexpm", "3952329afca17a4bf1fc02e161aec793fe603ef41026eedac4f2cdccf90bb035"},
+  "ex_brace_expansion": {:git, "https://github.com/hez/ex_brace_expansion.git", "1466ede7b51cc0378acb12120de40543cf45f49d", [tag: "v0.0.3"]},
   "ex_doc": {:hex, :ex_doc, "0.29.3", "f07444bcafb302db86e4f02d8bbcd82f2e881a0dcf4f3e4740e4b8128b9353f7", [:mix], [{:earmark_parser, "~> 1.4.31", [hex: :earmark_parser, repo: "hexpm", optional: false]}, {:makeup_elixir, "~> 0.14", [hex: :makeup_elixir, repo: "hexpm", optional: false]}, {:makeup_erlang, "~> 0.1", [hex: :makeup_erlang, repo: "hexpm", optional: false]}], "hexpm", "3dc6787d7b08801ec3b51e9bd26be5e8826fbf1a17e92d1ebc252e1a1c75bfe1"},
+  "ex_minimatch": {:git, "https://github.com/hez/ex_minimatch.git", "f2a1505734faff6ebe414e31046dae109b5bb015", []},
   "glob_ex": {:hex, :glob_ex, "0.1.1", "dc652ac17aeab97392da3beb73ff24f4e4de061b717ca7e75818e869e5acd104", [:mix], [], "hexpm", "d27bc551f9fd92b96c7bad687aba1a7cd5eeaaec7170c55add227f395f89e3af"},
   "libgraph": {:hex, :libgraph, "0.16.0", "3936f3eca6ef826e08880230f806bfea13193e49bf153f93edcf0239d4fd1d07", [:mix], [], "hexpm", "41ca92240e8a4138c30a7e06466acc709b0cbb795c643e9e17174a178982d6bf"},
   "makeup": {:hex, :makeup, "1.1.0", "6b67c8bc2882a6b6a445859952a602afc1a41c2e08379ca057c0f525366fc3ca", [:mix], [{:nimble_parsec, "~> 1.2.2 or ~> 1.3", [hex: :nimble_parsec, repo: "hexpm", optional: false]}], "hexpm", "0a45ed501f4a8897f580eabf99a2e5234ea3e75a4373c8a52824f6e873be57a6"},
@@ -15,4 +17,5 @@
   "sourceror": {:hex, :sourceror, "0.12.2", "2ae55efd149193572e0eb723df7c7a1bda9ab33c43373c82642931dbb2f4e428", [:mix], [], "hexpm", "7ad74ade6fb079c71f29fae10c34bcf2323542d8c51ee1bcd77a546cfa89d59c"},
   "test_iex": {:git, "https://github.com/mindreframer/test_iex.git", "cbd266373fca3709fe8a442e231b82298def7dd9", []},
   "typed_struct": {:hex, :typed_struct, "0.3.0", "939789e3c1dca39d7170c87f729127469d1315dcf99fee8e152bb774b17e7ff7", [:mix], [], "hexpm", "c50bd5c3a61fe4e198a8504f939be3d3c85903b382bde4865579bc23111d1b6d"},
+  "wild": {:hex, :wild, "1.0.1", "82695714c183100e94a34efc2aaf4a25471e75ffde5b17697a13d54a8479808a", [:mix], [], "hexpm", "fd399dad2a2787b64fa7fb7e5e9b73cfe8cdcfa80dfe41ed15aba14b890da6be"},
 }

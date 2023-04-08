@@ -87,11 +87,6 @@ defmodule Virtfs.Backend do
       true ->
         error(fs, :not_found)
     end
-  def glob(fs, path) do
-    {:ok, glob} = GlobEx.compile("#{fs.cwd}/#{path}")
-    paths = Map.keys(fs.files)
-    found = Enum.filter(paths, fn p -> GlobEx.match?(glob, p) end)
-    ok(fs, found)
   end
 
   defp ls_regex("/") do
@@ -106,6 +101,14 @@ defmodule Virtfs.Backend do
     with {:ok, regex} <- Regex.compile("^#{full_path}/[^/]+$") do
       regex
     end
+  end
+
+  def glob(fs, path) do
+    {:ok, glob} = GlobEx.compile("#{fs.cwd}/#{path}")
+    # glob = ExMinimatch.compile()
+    paths = Map.keys(fs.files)
+    found = Enum.filter(paths, fn p -> GlobEx.match?(glob, p) end)
+    ok(fs, found)
   end
 
   def tree(fs, path) do

@@ -262,6 +262,37 @@ defmodule Virtfs.BackendTest do
     end
   end
 
+  describe "glob" do
+    test "works like path glob" do
+      fs = Virtfs.FS.init()
+      {fs, :ok} = Backend.mkdir_p(fs, "a/b/c")
+      {fs, :ok} = Backend.cd(fs, "/a/b/c")
+      {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder")
+      {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder2")
+      {fs, :ok} = Backend.mkdir_p(fs, "my/nested/folder3")
+      {fs, :ok} = Backend.write(fs, "my/nested/folder/file.txt", "content")
+
+      checker = fn glob ->
+        Backend.glob(fs, glob) |> Util.ok!()
+      end
+
+      auto_assert({:ok, ["/a/b/c/my/nested"]} <- checker.("my/*"))
+
+      auto_assert(
+        {:ok,
+         [
+           "/a/b/c/my/nested",
+           "/a/b/c/my/nested/folder",
+           "/a/b/c/my/nested/folder/file.txt",
+           "/a/b/c/my/nested/folder2",
+           "/a/b/c/my/nested/folder3"
+         ]} <- checker.("my/**")
+      )
+
+      auto_assert({:ok, ["/a/b/c/my/nested/folder/file.txt"]} <- checker.("my/**/*.txt"))
+    end
+  end
+
   describe "mkdir_p" do
     test "creates full hierarchy of folders" do
       fs = Virtfs.FS.init()
