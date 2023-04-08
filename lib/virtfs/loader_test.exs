@@ -84,7 +84,7 @@ defmodule Virtfs.LoaderTest do
           }
         } <- data.files
       )
-
+    end
   end
 
   def fixture_path() do

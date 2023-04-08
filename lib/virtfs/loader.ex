@@ -3,6 +3,7 @@ defmodule Virtfs.Loader do
 
   @doc """
 
+  By default we load ALL files!
   Whitelist options for a typical Elixir project:
 
     ```elixir
@@ -14,7 +15,6 @@ defmodule Virtfs.Loader do
     ```
   """
   def run(%Virtfs.FS{} = fs, src, opts \\ []) do
-    # by default we load ALL files!
     whitelist = Keyword.get(opts, :whitelist, ["**/**"])
 
     files =
