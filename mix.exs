@@ -1,7 +1,7 @@
 defmodule Virtfs.MixProject do
   use Mix.Project
   @github_url "https://github.com/mindreframer/virtfs"
-  @version "0.1.3"
+  @version "0.1.4"
   @description "Virtfs allows mock-FS operations, that can be applied on a real FS folder"
 
   def project do

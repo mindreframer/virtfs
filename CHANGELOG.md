@@ -1,3 +1,9 @@
+## v0.1.4 (2023-04-09)
+
+- support path globbing: `Virtfs.glob`
+- vendored path globbing package, since it's an unpublished fork
+- removed `typed_struct` package (keeping dependencies low)
+
 ## v0.1.3 (2023-03-28)
 
 - Feat: add generator from Mix with adjustments for Virtfs
