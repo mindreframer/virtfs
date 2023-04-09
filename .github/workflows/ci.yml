@@ -11,7 +11,7 @@ env:
 
 jobs:
   lint-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     name: Test on OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
     strategy:
       matrix:
@@ -47,8 +47,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-mix-${{ env.cache-name }}-
             ${{ runner.os }}-mix-
-      - run: rm -rf _build
-      - run: rm -rf deps
+      # - run: rm -rf _build
+      # - run: rm -rf deps
       - run: mix deps.get
       - run: mix deps.compile
       - run: mix format --check-formatted

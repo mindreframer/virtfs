@@ -1,13 +1,6 @@
 defmodule Virtfs.FS do
   alias Virtfs.FS
-  use Virtfs.TypedStruct
-
-  typedstruct do
-    @typedoc "Virtual Filesystem"
-
-    field(:cwd, String.t(), default: "/")
-    field(:files, map())
-  end
+  defstruct cwd: "/", files: %{}
 
   def init(opts \\ []) do
     path = Keyword.get(opts, :path, "/")

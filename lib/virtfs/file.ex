@@ -1,15 +1,7 @@
 defmodule Virtfs.File do
   @type kind :: :file | :dir
 
-  use Virtfs.TypedStruct
-
-  typedstruct do
-    @typedoc "A File"
-
-    field(:kind, kind, default: :file)
-    field(:content, String.t(), default: "")
-    field(:path, String.t(), enforce: true)
-  end
+  defstruct kind: :file, content: "", path: nil
 
   def new_file(path, content) do
     %Virtfs.File{
