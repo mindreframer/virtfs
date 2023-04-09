@@ -104,6 +104,7 @@ defmodule Virtfs.Backend do
   end
 
   def glob(fs, path) do
+    alias Virtfs.PathGlob
     glob = PathGlob.compile("#{fs.cwd}/#{path}")
     paths = Map.keys(fs.files)
     found = Enum.filter(paths, fn p -> PathGlob.match?(glob, p, match_dot: true) end)
