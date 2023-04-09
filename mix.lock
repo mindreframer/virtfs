@@ -13,6 +13,7 @@
   "nimble_options": {:hex, :nimble_options, "1.0.1", "b448018287b22584e91b5fd9c6c0ad717cb4bcdaa457957c8d57770f56625c43", [:mix], [], "hexpm", "078b2927cd9f84555be6386d56e849b0c555025ecccf7afee00ab6a9e6f63837"},
   "nimble_parsec": {:hex, :nimble_parsec, "1.2.3", "244836e6e3f1200c7f30cb56733fd808744eca61fd182f731eac4af635cc6d0b", [:mix], [], "hexpm", "c8d789e39b9131acf7b99291e93dae60ab48ef14a7ee9d58c6964f59efb570b0"},
   "owl": {:hex, :owl, "0.7.0", "4899a1de8f5ba004ff14883f97a4ef97ac46c6395f1da39aa1e27a026443a1b3", [:mix], [], "hexpm", "c4c61de07128fff8fdcefb12722e0420262091296b796f3db4f400a1b3d22e8b"},
+  "path_glob": {:git, "https://github.com/mindreframer/path_glob.git", "f304131031573cebd3e147e1778e00f6933ed5b5", []},
   "rewrite": {:hex, :rewrite, "0.6.3", "d0066a47ee0dfd807f8ec9bfe2933a2e6ec06eb070af26ebb881e8bd1f75b4b3", [:mix], [{:glob_ex, "~> 0.1", [hex: :glob_ex, repo: "hexpm", optional: false]}, {:sourceror, "~> 0.12", [hex: :sourceror, repo: "hexpm", optional: false]}], "hexpm", "e0b0e3b6bbeddce9e16e04fb9b024fd82cd75369bd94bc27351458303e831bc2"},
   "sourceror": {:hex, :sourceror, "0.12.2", "2ae55efd149193572e0eb723df7c7a1bda9ab33c43373c82642931dbb2f4e428", [:mix], [], "hexpm", "7ad74ade6fb079c71f29fae10c34bcf2323542d8c51ee1bcd77a546cfa89d59c"},
   "test_iex": {:git, "https://github.com/mindreframer/test_iex.git", "cbd266373fca3709fe8a442e231b82298def7dd9", []},
