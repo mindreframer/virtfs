@@ -104,10 +104,9 @@ defmodule Virtfs.Backend do
   end
 
   def glob(fs, path) do
-    {:ok, glob} = GlobEx.compile("#{fs.cwd}/#{path}")
-    # glob = ExMinimatch.compile()
+    glob = PathGlob.compile("#{fs.cwd}/#{path}")
     paths = Map.keys(fs.files)
-    found = Enum.filter(paths, fn p -> GlobEx.match?(glob, p) end)
+    found = Enum.filter(paths, fn p -> PathGlob.match?(glob, p, match_dot: true) end)
     ok(fs, found)
   end
 
