@@ -1,6 +1,6 @@
 defmodule Virtfs.FS do
   alias Virtfs.FS
-  use TypedStruct
+  use Virtfs.TypedStruct
 
   typedstruct do
     @typedoc "Virtual Filesystem"

@@ -1,7 +1,7 @@
 defmodule Virtfs.File do
   @type kind :: :file | :dir
 
-  use TypedStruct
+  use Virtfs.TypedStruct
 
   typedstruct do
     @typedoc "A File"

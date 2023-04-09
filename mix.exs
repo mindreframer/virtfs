@@ -41,7 +41,6 @@ defmodule Virtfs.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:typed_struct, "~> 0.3.0"},
       {:nimble_parsec, "~> 1.2.3", runtime: false},
       {:ex_doc, "~> 0.29", only: :dev, runtime: false},
       {:mneme, "~> 0.2.7", only: [:test]},
