@@ -47,6 +47,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-mix-${{ env.cache-name }}-
             ${{ runner.os }}-mix-
+      - run: rm -rf _build
+      - run: rm -rf deps
       - run: mix deps.get
       - run: mix deps.compile
       - run: mix format --check-formatted
