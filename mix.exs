@@ -43,8 +43,8 @@ defmodule Virtfs.MixProject do
     [
       {:nimble_parsec, "~> 1.2.3", runtime: false},
       {:ex_doc, "~> 0.29", only: :dev, runtime: false},
-      {:mneme, "~> 0.2.7", only: [:test]},
-      {:test_iex, github: "mindreframer/test_iex", only: [:test]}
+      {:mneme, "~> 0.3.0", only: [:test]},
+      {:maxo_test_iex, "~> 0.1", only: [:test]}
     ]
   end
 end
